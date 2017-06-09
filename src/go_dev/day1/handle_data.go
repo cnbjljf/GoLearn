@@ -167,7 +167,7 @@ func getDateData(dict map[string]map[string]int, timeList []string, p chan map[s
 	for k, _ := range dict { // k is a name of select sql
 
 		for _, value := range timeList { // 循环这个时间数组
-			_, ok := dict[k][value] // 如果循环出来的时间不等于tTmp指定下标的时间,那么就绪要把dict里这个时间点的数据进行清洗
+			_, ok := dict[k][value] // 如果循环出来的时间不等于tTmp指定下标的时间,那么就绪要把dict里这个时间点的数据进行清洗,也就是把这个值设置为0
 			if ok == false {
 				dict[k][value] = 0 // No data,so set the key's Value as 0
 			}
