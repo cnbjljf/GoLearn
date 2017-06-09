@@ -10,7 +10,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
@@ -67,11 +66,11 @@ func saveData(saveRet []map[string]map[string]int) int64 {
 	if err != nil {
 		log.Fatalln("Happend a error when connecting,", err)
 	}
-	conn.Do("AUTH", "password")
-	timeKey := time.Now().Unix()
-	rt, err := conn.Do("SET", timeKey, jsSaveData)
+	conn.Do("AUTH", "quanshi")
+
+	rt, err := conn.Do("SET", "JsonSaveData", jsSaveData)
 	if rt == "OK" {
-		return timeKey
+		return 1
 	} else if err != nil {
 		return 0
 	}
@@ -90,7 +89,7 @@ func handleData(sql_name, sql_cmd string, timeOffset int, p chan map[string]map[
 	var timepointList []string
 
 	//	log.Println("begin to connenct db")
-	db, err := sql.Open("mysql", "username:password@tcp(host:port)/db_name")
+	db, err := sql.Open("mysql", "root:quanshi@tcp(192.168.96.27:3306)/automatic_new")
 	if err != nil {
 		log.Fatal("can't connect mysql db", err)
 	}
@@ -157,40 +156,31 @@ func handleData(sql_name, sql_cmd string, timeOffset int, p chan map[string]map[
 	var dataDict map[string]map[string]int // 数据格式为 {"数据名字":{"时间点":数值}}
 	dataDict = make(map[string]map[string]int, 10)
 	dataDict[sql_name] = recordDict
+
 	p <- dataDict
 
 }
 
 func getDateData(dict map[string]map[string]int, timeList []string, p chan map[string]map[string]int) {
 	// this is first time to clear the data of date ,because these data they have different datetime
-	var tTmp []string
 
-	for k, _ := range dict { // 下面这个循环是把所有的时间点取出来放入一个数组里
-		for kk, _ := range dict[k] {
-			tTmp = append(tTmp, kk)
-		}
-
-	}
-	sort.Strings(tTmp)       // 数组排序
 	for k, _ := range dict { // k is a name of select sql
 
-		for index, value := range timeList { // 循环这个时间数组
-			if value != tTmp[index] { // 如果循环出来的时间不等于tTmp指定下标的时间,那么就绪要把dict里这个时间点的数据进行清洗
-				previous_index := index - 1
-				next_index := index + 1
-				dict[k][value] = (dict[k][timeList[previous_index]] + dict[k][timeList[next_index]]) / 2 // get a average betweent previous one and next one
-				log.Println(dict[k][value])
+		for _, value := range timeList { // 循环这个时间数组
+			_, ok := dict[k][value] // 如果循环出来的时间不等于tTmp指定下标的时间,那么就绪要把dict里这个时间点的数据进行清洗
+			if ok == false {
+				dict[k][value] = 0 // No data,so set the key's Value as 0
 			}
 		}
+		p <- dict
 	}
-	p <- dict
 
 }
 
-func clearData(timeList chan []string) (ret []string) {
+func clearData(timeList chan []string, len_sql_list int) []string {
 	// 把时间去重，返回一个去重后的时间轴
 	var t []string
-	for i := 0; i < len(timeList); i++ {
+	for i := 0; i < len_sql_list; i++ {
 		rt := <-timeList // 把time管道里面的值取出来,一个select语句对应一个结果
 		for _, v := range rt {
 			t = append(t, v) // 把时间追加到这个列表上去
@@ -198,12 +188,14 @@ func clearData(timeList chan []string) (ret []string) {
 	}
 	sort.Strings(t) // 排序时间
 	a_len := len(t)
+	var ret []string
 	for i := 0; i < a_len; i++ { // 循环这个 时间数组，如前后两个值不相等或者这个值不为空，那么就添加到ret数组里，实现去重的效果
 		if (i > 0 && t[i-1] == t[i]) || len(t[i]) == 0 {
 			continue
 		}
 		ret = append(ret, t[i])
 	}
+
 	return ret
 }
 
@@ -220,6 +212,7 @@ func mainRun(timeOffset int, start_time, end_time string) int64 {
 
 	p = make(chan map[string]map[string]int, 10) // this channel is use for saving data after first process
 	timeList = make(chan []string, 100000)       // this channel is use for saving time point after first process
+	len_sql_list := len(sql_cmd_list)
 
 	for sql_name, sql_cmd := range sql_cmd_list {
 		go handleData(sql_name, sql_cmd, timeOffset, p, timeList)
@@ -228,10 +221,9 @@ func mainRun(timeOffset int, start_time, end_time string) int64 {
 	if timeOffset <= 5 {
 		var pipe chan map[string]map[string]int // 这个channel用来存储第二次清洗后的数据，两个channel来存放是避免数据之间互相干扰
 		pipe = make(chan map[string]map[string]int, 10)
-		//		var retList  []map[string]map[string]int
-		ret := clearData(timeList)
-		//		retList = [s1,s2,s3,s4,s5]
-		for i := 0; i < len(sql_cmd_list); i++ {
+		ret := clearData(timeList, len_sql_list) // 清洗的时间轴
+
+		for i := 0; i < len_sql_list; i++ {
 			v := <-p
 			go getDateData(v, ret, pipe)
 		}
@@ -266,5 +258,6 @@ func main() {
 	starTime := os.Args[2]
 	endTime := os.Args[3]
 	fmt.Println(mainRun(timeOffset, starTime, endTime))
+	//	fmt.Println(mainRun(5, "2017-05-01", "2017-05-06"))
 
 }
