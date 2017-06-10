@@ -82,7 +82,7 @@ func handleData(sql_name, sql_cmd string, timeOffset int, p chan map[string]map[
 	/* <=5:按5分钟间隔处理
 	5<x<25:按照1小时间隔处理
 	>25：按照一天的间隔处理
-	其中按照五分种间隔处理的清洗方式较多一步，需要把该时间点不存在的数值通过前后两个值的平均数给凑上
+	其中按照五分种间隔处理的清洗方式较多一步，需要把该时间点不存在的数值设置为0给凑上
 	*/
 	var recordDict map[string]int
 	recordDict = make(map[string]int, 100000)
