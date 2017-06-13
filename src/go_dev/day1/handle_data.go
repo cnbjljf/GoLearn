@@ -66,7 +66,7 @@ func saveData(saveRet []map[string]map[string]int) int64 {
 	if err != nil {
 		log.Fatalln("Happend a error when connecting,", err)
 	}
-	conn.Do("AUTH", "quanshi")
+	conn.Do("AUTH", "password")
 
 	rt, err := conn.Do("SET", "JsonSaveData", jsSaveData)
 	if rt == "OK" {
@@ -89,7 +89,7 @@ func handleData(sql_name, sql_cmd string, timeOffset int, p chan map[string]map[
 	var timepointList []string
 
 	//	log.Println("begin to connenct db")
-	db, err := sql.Open("mysql", "root:quanshi@tcp(192.168.96.27:3306)/automatic_new")
+	db, err := sql.Open("mysql", "username:password@tcp(host:port)/database")
 	if err != nil {
 		log.Fatal("can't connect mysql db", err)
 	}
