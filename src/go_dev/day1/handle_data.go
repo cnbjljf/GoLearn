@@ -66,7 +66,7 @@ func saveData(saveRet []map[string]map[string]int) int64 {
 	if err != nil {
 		log.Fatalln("Happend a error when connecting,", err)
 	}
-	conn.Do("AUTH", "password")
+	conn.Do("AUTH", "quanshi")
 
 	rt, err := conn.Do("SET", "JsonSaveData", jsSaveData)
 	if rt == "OK" {
@@ -82,14 +82,14 @@ func handleData(sql_name, sql_cmd string, timeOffset int, p chan map[string]map[
 	/* <=5:按5分钟间隔处理
 	5<x<25:按照1小时间隔处理
 	>25：按照一天的间隔处理
-	其中按照五分种间隔处理的清洗方式较多一步，需要把该时间点不存在的数值设置为0给凑上
+	其中按照五分种间隔处理的清洗方式较多一步，需要把该时间点不存在的数值通过前后两个值的平均数给凑上
 	*/
 	var recordDict map[string]int
 	recordDict = make(map[string]int, 100000)
 	var timepointList []string
 
 	//	log.Println("begin to connenct db")
-	db, err := sql.Open("mysql", "username:password@tcp(host:port)/automatic_new")
+	db, err := sql.Open("mysql", "root:quanshi@tcp(192.168.96.27:3306)/automatic_new")
 	if err != nil {
 		log.Fatal("can't connect mysql db", err)
 	}
@@ -120,10 +120,9 @@ func handleData(sql_name, sql_cmd string, timeOffset int, p chan map[string]map[
 				var r record
 				row.Scan(&r.timepoint, &r.metervalue)
 				timepoint := strings.Split(r.timepoint, ":")[0:1]
-				datetime := ""
-				for _, i := range timepoint {
-					datetime = datetime + i
-				}
+
+				datetime := fmt.Sprintf("%s", timepoint[0]) // format this date
+
 				value, ok := recordDict[datetime]
 				if ok == true { // means the map has the key
 					recordDict[datetime] = value + r.metervalue
@@ -167,7 +166,7 @@ func getDateData(dict map[string]map[string]int, timeList []string, p chan map[s
 	for k, _ := range dict { // k is a name of select sql
 
 		for _, value := range timeList { // 循环这个时间数组
-			_, ok := dict[k][value] // 如果循环出来的时间不等于tTmp指定下标的时间,那么就绪要把dict里这个时间点的数据进行清洗,也就是把这个值设置为0
+			_, ok := dict[k][value] // 如果循环出来的时间不等于tTmp指定下标的时间,那么就绪要把dict里这个时间点的数据进行清洗
 			if ok == false {
 				dict[k][value] = 0 // No data,so set the key's Value as 0
 			}
