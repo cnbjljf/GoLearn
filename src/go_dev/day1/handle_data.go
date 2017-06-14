@@ -43,16 +43,15 @@ func saveData(saveRet []map[string]map[string]int) int64 {
 	// save data to redis
 
 	//formating these data as json format
-	var tJS []DataValueMap
+
 	//	var resultList saveRetList
 	var retMapList []saveRetMap
 
 	for _, v := range saveRet {
 		for name, v1 := range v {
-			//			DataValueMap{v1[}
+			var tJS []DataValueMap
 			for k, v := range v1 {
-				jsData1 := DataValueMap{k, v}
-				tJS = append(tJS, jsData1)
+				tJS = append(tJS, DataValueMap{k, v})
 			}
 			r := saveRetMap{name, tJS}
 			retMapList = append(retMapList, r)
