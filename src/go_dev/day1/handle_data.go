@@ -43,15 +43,16 @@ func saveData(saveRet []map[string]map[string]int) int64 {
 	// save data to redis
 
 	//formating these data as json format
-
+	var tJS []DataValueMap
 	//	var resultList saveRetList
 	var retMapList []saveRetMap
 
 	for _, v := range saveRet {
 		for name, v1 := range v {
-			var tJS []DataValueMap
+			//			DataValueMap{v1[}
 			for k, v := range v1 {
-				tJS = append(tJS, DataValueMap{k, v})
+				jsData1 := DataValueMap{k, v}
+				tJS = append(tJS, jsData1)
 			}
 			r := saveRetMap{name, tJS}
 			retMapList = append(retMapList, r)
@@ -119,9 +120,10 @@ func handleData(sql_name, sql_cmd string, timeOffset int, p chan map[string]map[
 				var r record
 				row.Scan(&r.timepoint, &r.metervalue)
 				timepoint := strings.Split(r.timepoint, ":")[0:1]
-
-				datetime := fmt.Sprintf("%s", timepoint[0]) // format this date
-
+				datetime := ""
+				for _, i := range timepoint {
+					datetime = datetime + i
+				}
 				value, ok := recordDict[datetime]
 				if ok == true { // means the map has the key
 					recordDict[datetime] = value + r.metervalue
