@@ -3,13 +3,13 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 )
 
 func main() {
 	var inputNum string
-	inputNum = os.Args[1]
+	fmt.Println("= 请输入需要转换数字")
+	fmt.Scanln(&inputNum)
 	f, err := strconv.Atoi(inputNum)
 	if err != nil {
 		fmt.Println("can not convert to int")
