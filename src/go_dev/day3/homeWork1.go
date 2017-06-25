@@ -3,7 +3,7 @@ package main
 
 import (
 	"fmt"
-	"strconv"
+	//	"strconv"
 	"strings"
 )
 
@@ -13,12 +13,9 @@ func nineNine() {
 		x := i + 1
 		for j := 1; j < x; j++ {
 			s := i * j
-			if j == i { // 如果J等于I，那么说明需要换行了，99乘法表里就是两个数相等的时候换行
-				fmt.Printf("%dx%d=%d\n", j, i, s)
-			} else {
-				fmt.Printf("%dx%d=%d  ", j, i, s)
-			}
+			fmt.Printf("%dx%d=%d  ", j, i, s)
 		}
+		fmt.Println()
 	}
 }
 
@@ -84,42 +81,42 @@ func countNum(a string) map[string]int {
 	return countMap
 }
 
-func addBigInt(a, b string) string {
-	lenA := len(a)
-	lenB := len(b)
-	var lenMax int
-	if lenA >= lenB {
-		lenMax := lenA + 1
-	} else if lenA < lenB {
-		lenMax := lenB + 1
-	}
-	sum := ""
-	for i := 0; i < lenMax; i++ {
-		aa := string(a[lenA-i])
-		aNum, _ := strconv.Atoi(aa)
+//func addBigInt(a, b string) string {
+//	lenA := len(a)
+//	lenB := len(b)
+//	var lenMax int
+//	if lenA >= lenB {
+//		lenMax := lenA + 1
+//	} else if lenA < lenB {
+//		lenMax := lenB + 1
+//	}
+//	sum := ""
+//	for i := 0; i < lenMax; i++ {
+//		aa := string(a[lenA-i])
+//		aNum, _ := strconv.Atoi(aa)
 
-		bb := string(b[lenB-i])
-		bNum, _ := strconv.Atoi(bb)
+//		bb := string(b[lenB-i])
+//		bNum, _ := strconv.Atoi(bb)
 
-		sumAB := strconv.Itoa(aNum + bNum)
-		sumABInt, _ := strconv.Atoi(sumAB)
-		if sumABInt >= 10 { // 满10向前 进1位
-			index := lenA - i - 1
-			a[index] = a[index] + sumAB[0]
-		}
-		sum = sumAB[1] + sum
-	}
-	return sum
-	return "1"
-}
+//		sumAB := strconv.Itoa(aNum + bNum)
+//		sumABInt, _ := strconv.Atoi(sumAB)
+//		if sumABInt >= 10 { // 满10向前 进1位
+//			index := lenA - i - 1
+//			a[index] = a[index] + sumAB[0]
+//		}
+//		sum = sumAB[1] + sum
+//	}
+//	return sum
+//	return "1"
+//}
 
 func main() {
-	//	nineNine()
-	//	wanShu()
+	nineNine()
+	wanShu()
 	//	fmt.Println(huiWen("上海自来水来自海上"))
 	//	fmt.Println(countNum("asdfasdfc123123  aaaadoqpeiekc,gmntsdf9018234"))
 	//	fmt.Println(addBigInt("22222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222", "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"))
 	//	a := "aaaaaa"
 	//	fmt.Printf("%T\n", string(a[1]))
-	fmt.Println(addBigInt("22222", "1111"))
+	//	fmt.Println(addBigInt("22222", "1111"))
 }
