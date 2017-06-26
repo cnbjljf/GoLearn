@@ -3,22 +3,25 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
 func main() {
 
-	aa := "14+12"
+	aa := "99+1"
 	bb := strings.Split(aa, "+")
 	f1 := []rune(bb[0])
 	f2 := []rune(bb[1])
 
-	lenf1 := len(f1)
-	lenf2 := len(f2)
+	lenf1 := len(f1) //2
+	lenf2 := len(f2) // 1
 	var lenMax int
 	//	var lenMin int
 
 	left := 0
+	var rt string
+	var sum rune
 
 	if lenf1 >= lenf2 {
 		//		lenMin = lenf2
@@ -29,12 +32,25 @@ func main() {
 	}
 	for i := 1; i <= lenMax; i++ {
 		index := lenMax - i
-		sum := (f1[index] - '0') + (f2[index] - '0') + rune(left)
-		fmt.Println(sum)
-		if sum > 10 {
+		if index >= lenf1 {
+			if index < lenf2 {
+				sum = (f2[index] - '0') + rune(left)
+			}
+		} else if index >= lenf2 {
+			if index < lenf1 {
+				sum = (f1[index] - '0') + rune(left)
+			}
+
+		} else {
+			sum = (f1[index] - '0') + (f2[index] - '0') + rune(left)
+		}
+		s1 := strconv.Itoa(int(sum))
+		fmt.Printf("%T \t %v\n", sum, sum)
+		if sum >= 10 {
 			left = 1
 		}
+		rt = s1 + rt
 	}
 
-	fmt.Printf("%c %c", f1, f2)
+	fmt.Println(rt)
 }

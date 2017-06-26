@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+var d int
+
 const (
 	man    = 1
 	female = 2
