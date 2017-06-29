@@ -2,39 +2,60 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 )
 
-func main() {
-
-	aa := "14+12"
-	bb := strings.Split(aa, "+")
-	f1 := []rune(bb[0])
-	f2 := []rune(bb[1])
-
-	lenf1 := len(f1)
-	lenf2 := len(f2)
-	var lenMax int
-	//	var lenMin int
-
-	left := 0
-
-	if lenf1 >= lenf2 {
-		//		lenMin = lenf2
-		lenMax = lenf1
-	} else {
-		//		lenMin = lenf1
-		lenMax = lenf2
+func addBigInt(a, b string) (result string) {
+	if len(a) == 0 && len(b) == 0 {
+		return strconv.Itoa(0)
 	}
-	for i := 1; i <= lenMax; i++ {
-		index := lenMax - i
-		sum := (f1[index] - '0') + (f2[index] - '0') + rune(left)
-		fmt.Println(sum)
-		if sum > 10 {
+
+	index1 := len(a) - 1
+	index2 := len(b) - 1
+
+	var left int
+	var sum int
+
+	fmt.Println(a, b)
+	for index1 >= 0 && index2 >= 0 {
+		c1 := a[index1] - '0'
+		c2 := b[index2] - '0'
+
+		sum = int(c1) + int(c2) + left
+
+		if sum >= 10 {
 			left = 1
+		} else {
+			left = 0
 		}
+		c3 := (sum % 10) - '0'
+		result = fmt.Sprintf("%c%s", c3, result)
+		index1--
+		index2--
 	}
 
-	fmt.Printf("%c %c", f1, f2)
+	return
+}
+
+func main() {
+	reader := bufio.NewReader(os.Stdin)
+	ss, _, err := reader.ReadLine()
+	if err != nil {
+		fmt.Println("error:", err)
+		return
+	}
+
+	strSlice := strings.Split(string(ss), "+")
+	if len(strSlice) != 2 {
+		fmt.Println("please input a+b")
+		return
+	}
+
+	a := strSlice[0]
+	b := strSlice[1]
+	fmt.Println(addBigInt(a, b))
 }
