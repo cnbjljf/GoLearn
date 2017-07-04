@@ -25,6 +25,6 @@ func main() {
 	fmt.Println(now.Format("02/1/2006 15:04:05"))
 	fmt.Println(now.Format("2006/1/02 15:04:05"))
 	t2 := time.Now().UnixNano() - tt
-	fmt.Println("how long ", t2/1000)
+	fmt.Println("how long ", t2/1000/1000)
 
 }
