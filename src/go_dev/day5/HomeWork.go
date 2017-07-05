@@ -84,26 +84,63 @@ func addBook(b *book) book {
 	return *b
 }
 
-func selectBook(b *book) {
+func selectBook(b *book, key string) {
 	// 查询书籍的
-	var name, author, published string
+
 	//	fmt.Println(name, author, published)
-	for {
-		fmt.Println("select a book from library,you can input the book's name,author or published! enter quit will exit")
-		rt := bufio.NewReader(os.Stdin)
-		input, _, _ := rt.ReadLine()
-		key := string(input[0])
-		if key == "quit" {
-			return
+	//	for {
+	//		fmt.Println("select a book from library,you can input the book's name,author or published! enter quit will exit")
+	//		rt := bufio.NewReader(os.Stdin)
+	//		input, _, _ := rt.ReadLine()
+	//		key := string(input[0])
+	//		if key == "quit" {
+	//			return
+	//		}
+
+	for b != nil {
+		if b.name == key || b.author == key || b.published == key {
+			fmt.Println("find this book ,the detail of the book will show you ")
+			fmt.Println("the book name", b.name, ", the book author", b.author, ", the book published",
+				b.published, ",and how many book", b.many)
 		}
-		for b != nil {
-			if b.name == key || b.author == key || b.published == key {
-				fmt.Println(", book name", b.name, ", book author", b.author, ", book published",
-					b.published, ", how many book", b.many, ", the next book", b.next)
-			}
-			b = b.next
-		}
+		b = b.next
 	}
+	//	}
+}
+
+func addStudent(s *student) *student {
+	// 录入学生信息的
+	var st = s
+	var name, ID, sex string
+
+	for {
+		reader := bufio.NewReader(os.Stdin)
+		rt, _, err := reader.ReadLine()
+		if err != nil {
+			fmt.Println("happend a error: ", err)
+			continue
+		}
+		rt = strings.Split(string(rt), ",")
+		name = strings.TrimSpace(rt[0])
+		if name == "quit" {
+			fmt.Println("exit to add student's info")
+			break
+		}
+		if len(rt) != 3 {
+			fmt.Println("you weren't provide right arguments")
+			continue
+		}
+		ID = strings.TrimSpace(rt[1])
+		sex = strings.TrimSpace(rt[2])
+		stu := student{
+			name: name,
+			ID:   ID,
+			sex:  sex,
+		}
+		st.next = &stu
+		st = &stu
+	}
+	return s
 }
 
 func main() {
@@ -113,8 +150,6 @@ func main() {
 		published: "1986-07-01",
 		many:      12,
 	}
-	var bk book
-	fmt.Println(bInit, bk)
 	for {
 		msg := `
 1： add books
@@ -124,21 +159,35 @@ func main() {
 5: manage books
 `
 		fmt.Println(msg)
-
 		reader := bufio.NewReader(os.Stdin)
 		input, _, err := reader.ReadLine()
 		if err != nil {
 			fmt.Println("happend a error: ", err)
 			return
 		}
+		if len(input) != 1 {
+			continue
+		}
 		i, _ := strconv.Atoi(string(input[0]))
-		fmt.Printf("%T,%v", i, i)
+
 		switch i {
 		case 1:
-			bk = addBook(&bInit)
-			showBook(&bk)
+			bInit = addBook(&bInit)
+			showBook(&bInit)
+
 		case 2:
-			selectBook(&bk)
+			fmt.Println("select a book from library,you can input the book's name,author or published! enter quit will exit")
+			rt := bufio.NewReader(os.Stdin)
+			input, _, _ := rt.ReadLine()
+			key := string(input)
+			fmt.Println("keyaa", key)
+			if key == "quit" {
+				return
+			}
+			selectBook(&bInit, key)
+
+		case 3:
+
 		default:
 			fmt.Println("you weren't input a available choice!!")
 			continue
