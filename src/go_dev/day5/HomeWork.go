@@ -2,12 +2,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
-	//	"strings"
-	"bufio"
-	"os"
 	"time"
 )
 
@@ -33,7 +32,6 @@ func showBook(b *book) {
 	for b != nil {
 		fmt.Println("book name", b.name, ", book author", b.author, ", book published",
 			b.published, ", how many book", b.many, ", the next book", b.next)
-
 		b = b.next
 		time.Sleep(10 * time.Millisecond)
 	}
@@ -43,19 +41,18 @@ func showStu(s *student) {
 	// 显示学生信息的
 	for s != nil {
 		fmt.Println("student's name", s.name, ", student's sex", s.sex, ", student's ID",
-			s.ID, "the next student", s.next)
+			s.ID, "the borrowed book is [", s.book, "] the next student", s.next)
 
 		s = s.next
 		time.Sleep(10 * time.Millisecond)
 	}
 }
 
-func addBook(b *book) book {
+func addBook(b *book) *book {
 	// 增加书籍的，录入书籍的信息的格式必须是  书名,作者,出版时间,多少本   必须以逗号分隔。
 
-	var bb = b
-
 	for {
+		var bbb = b
 		fmt.Println("please input the book's basic info,enter quit will quit this func, and the format is ")
 		fmt.Println(" name, author ,published , how many")
 		fmt.Println("举个例子：    aaa,Leo,20170705,12")
@@ -83,18 +80,22 @@ func addBook(b *book) book {
 		if name == "" && author == "" && published == "" && many == 0 {
 			continue
 		}
-
 		bookInfo := book{
 			name:      name,
 			author:    author,
 			published: published,
 			many:      many,
 		}
-		bb.next = &bookInfo
-		bb = &bookInfo
+		previous := bbb
+		for bbb != nil {
+			previous = bbb
+			bbb = bbb.next
+		}
+
+		previous.next = &bookInfo
 
 	}
-	return *b
+	return b
 }
 
 func selectBook(b *book, key string) (*book, bool) {
@@ -125,12 +126,13 @@ func selectBook(b *book, key string) (*book, bool) {
 	//	}
 }
 
-func addStudent(s *student) student {
+func addStudent(s *student) *student {
 	// 录入学生信息的
-	var st = s
+
 	var name, ID, sex string
 
 	for {
+		var st = s
 		fmt.Println("please input student's info,enter quit is exit,and the format is name,ID,sex    ")
 		fmt.Println("必须以逗号分隔！！！例如：   ljf,2017070501,man")
 		reader := bufio.NewReader(os.Stdin)
@@ -156,10 +158,15 @@ func addStudent(s *student) student {
 			ID:   ID,
 			sex:  sex,
 		}
-		st.next = &stu
-		st = &stu
+		previous := st
+		for st != nil {
+			previous = st
+			st = st.next
+		}
+		previous.next = &stu
+
 	}
-	return *s
+	return s
 }
 
 func borrowBook(b *book, s *student) student {
@@ -206,11 +213,12 @@ func borrowBook(b *book, s *student) student {
 		}
 		stuName := strings.TrimSpace(string(result))
 
-		if stuName == "quit" {
+		if strings.ToLower(stuName) == "quit" {
 			break
 		}
-		brBook, flag := selectBook(bb, bookName)
 
+		// flag为标志位，判断是否找到了指定名字的书籍
+		brBook, flag := selectBook(bb, bookName)
 		if flag {
 			for ss != nil {
 				if ss.name == stuName {
@@ -236,34 +244,62 @@ func borrowBook(b *book, s *student) student {
 	return *ss
 }
 
-func delStuNode(s *student) *student {
+func delStuNode(s *student) {
 	// 删指定学生
 	var ss = s
-	fmt.Fprintln("these students are enrolled!")
+	fmt.Println("these students are enrolled!")
 	for s != nil {
 		fmt.Printf("the student's name:[%s] id[%s]\n", s.name, s.ID)
 		s = s.next
 	}
-	fmt.Fprintln("please input the student's name")
+	fmt.Println("please input the student's name to delete ")
 	reader := bufio.NewReader(os.Stdin)
 	result, _, err := reader.ReadLine()
 	if err != nil {
-		fmt.Fprintln("happend a error", err)
-	}
-	chooseName := strings.TrimSpace(string(result))
-	if rt == "quit" {
+		fmt.Println("happend a error", err)
 		return
 	}
+	chooseName := strings.TrimSpace(string(result))
+	if strings.ToLower(chooseName) == "quit" {
+		return
+	}
+	previous := ss
 	for ss != nil {
 		if ss.name == chooseName {
-
+			previous.next = ss.next
 		}
+		previous = ss
+		ss = ss.next
 	}
-
 }
 
-func delBkNode(b *book, name string) *book {
+func delBkNode(b *book) {
 	// 删指定书
+	var bb = b
+	fmt.Printf("\nthese books are enrolled!!\n")
+	for b != nil {
+		fmt.Printf("the book name: [%s] author:[%s]\n", b.name, b.author)
+		b = b.next
+	}
+	fmt.Printf("\nplease input the books name!\n")
+	reader := bufio.NewReader(os.Stdin)
+	result, _, err := reader.ReadLine()
+	if err != nil {
+		fmt.Println("happend a error!", err)
+	}
+	inputName := strings.TrimSpace(string(result))
+	if strings.ToLower(inputName) == "quit" {
+		return
+	}
+	previous := bb
+	for bb != nil {
+		if bb.name == inputName {
+			previous.next = bb.next
+		}
+		previous = bb
+		bb = bb.next
+	}
+
 }
 
 func management(b *book, s *student) {
@@ -279,13 +315,13 @@ func management(b *book, s *student) {
 		reader := bufio.NewReader(os.Stdin)
 		result, _, err := reader.ReadLine()
 		if err != nil {
-			fmt.Fprintln("happend a error", err)
+			fmt.Println("happend a error", err)
 		}
 		rt := strings.TrimSpace(string(result))
-		if rt == "quit" {
+		if strings.ToLower(rt) == "quit" {
 			break
 		}
-		inputNum := strconv.Atoi(rt)
+		inputNum, _ := strconv.Atoi(rt)
 		switch inputNum {
 		case 1:
 			delBkNode(b)
@@ -312,12 +348,14 @@ func main() {
 
 	for {
 		msg := `
-1：add books
-2: select book
-3: add students's info
-4: borrow books
-5: manage books(del book or student!)
-`
+		1：add books
+		2: select book
+		3: add students's info
+		4: borrow books
+		5: manage books(del a book or a student!)
+		6: show books
+		7: show students
+		`
 		fmt.Println(msg)
 		reader := bufio.NewReader(os.Stdin)
 		input, _, err := reader.ReadLine()
@@ -332,24 +370,29 @@ func main() {
 
 		switch i {
 		case 1:
-			bInit = addBook(&bInit)
-			showBook(&bInit)
+			showBook(addBook(&bInit))
 
 		case 2:
 			fmt.Println("select a book from library,you can input the book's name,author or published! enter quit will exit")
 			rt := bufio.NewReader(os.Stdin)
 			input, _, _ := rt.ReadLine()
 			key := string(input)
-			if key == "quit" {
+			if strings.ToLower(key) == "quit" {
 				break
 			}
 			selectBook(&bInit, key)
 
 		case 3:
-			stuInit = addStudent(&stuInit)
-			showStu(&stuInit)
+			showStu(addStudent(&stuInit))
 		case 4:
 			borrowBook(&bInit, &stuInit)
+
+		case 5:
+			management(&bInit, &stuInit)
+		case 6:
+			showBook(&bInit)
+		case 7:
+			showStu(&stuInit)
 
 		default:
 			fmt.Println("you weren't input a available choice!!")
