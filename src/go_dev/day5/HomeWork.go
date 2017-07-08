@@ -393,7 +393,6 @@ func main() {
 			showBook(&bInit)
 		case 7:
 			showStu(&stuInit)
-
 		default:
 			fmt.Println("you weren't input a available choice!!")
 			continue

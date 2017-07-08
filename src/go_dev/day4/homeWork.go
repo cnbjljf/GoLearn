@@ -35,7 +35,7 @@ func chaRu(intSlice []int) []int {
 		3 依次类推，同理可得。。。
 	*/
 	for i := 1; i < len(intSlice); i++ {
-		// 下面这个循环是说#当前位置大于0说明开始循环到第二个数了，
+		// 下面这个循环是说当前位置大于0说明开始循环到第二个数了，
 		// 而且当前列表元素的前一位(该元素左边第一位)大于当前的元素
 		for i > 0 && intSlice[i-1] > intSlice[i] {
 			currentNum := intSlice[i]
@@ -43,7 +43,6 @@ func chaRu(intSlice []int) []int {
 			intSlice[i-1] = currentNum
 			i = i - 1
 		}
-
 	}
 	return intSlice
 }
@@ -122,7 +121,6 @@ func xuanZhe(intSlice []int) []int {
 		}
 	}
 	return intSlice
-
 }
 
 func main() {
