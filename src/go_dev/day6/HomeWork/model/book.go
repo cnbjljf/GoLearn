@@ -11,10 +11,10 @@ const (
 )
 
 type Book struct {
-	Name   string
-	Total  int
-	Author string
-	Next   *Book
+	Name       string
+	Total      int
+	Author     string
+	CreateTime string
 }
 
 func (b *Book) canBorrow(many int) bool {

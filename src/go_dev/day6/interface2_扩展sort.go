@@ -29,7 +29,6 @@ func (st stuArray) Swap(i, j int) {
 }
 
 func main() {
-	fmt.Println("Hello World!")
 	var stus stuArray
 	for i := 0; i < 10; i++ {
 		stu := student{

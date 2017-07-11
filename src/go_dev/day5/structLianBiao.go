@@ -40,7 +40,7 @@ func headInsert(p *student) *student {
 	return p
 }
 
-func tailInsert(p *student) *student {
+func tailInsert(p *student) student {
 	var tail = p
 
 	// 尾部插入，也就是在for循环里面越在后面插入的值，越在最后
@@ -52,13 +52,21 @@ func tailInsert(p *student) *student {
 		}
 		tail.next = &stu
 		tail = &stu
-		showStruct(p)
 	}
-	return p
+	return *p
 }
 
-func delNode(p *student) *student {
-
+func delNode(s *student, name string) student {
+	var ss = s
+	previous := s
+	for s != nil {
+		if s.name == name {
+			previous.next = s.next
+		}
+		previous = s
+		s = s.next
+	}
+	return *ss
 }
 
 func main() {
@@ -70,6 +78,7 @@ func main() {
 	//	st1 := *headInsert(&st0)
 	//	showStruct(&st1)
 	fmt.Println("尾部插入")
-	st2 := *tailInsert(&st0)
+	st2 := tailInsert(&st0)
+	st2 = delNode(&st2, "stu3")
 	showStruct(&st2)
 }

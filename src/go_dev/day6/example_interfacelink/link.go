@@ -22,8 +22,8 @@ func (p *Link) InsertHead(data interface{}) {
 		next: nil,
 	}
 	if p.tail == nil && p.tail == nil {
-		p.tail = data
-		p.next = data
+		p.tail = node
+		p.head = node
 		return
 	}
 	node.next = p.head
@@ -37,8 +37,8 @@ func (p *Link) InsertTail(data interface{}) {
 		next: nil,
 	}
 	if p.tail == nil && p.head == nil {
-		p.tail = data
-		p.head = data
+		p.tail = node
+		p.head = node
 	}
 	p.tail.next = node
 	p.tail = node

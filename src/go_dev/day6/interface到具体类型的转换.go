@@ -11,7 +11,7 @@ type student struct {
 }
 
 func test(a interface{}) {
-	b, ok := a.(int) //把interface接口转为int类型
+	b, ok := a.(int) //把interface转为int类型
 	if ok == false {
 		fmt.Println("conver faild")
 		return
@@ -22,7 +22,7 @@ func test(a interface{}) {
 // 通过switch 语句来匹配
 func test2(a ...interface{}) {
 	for i, v := range a {
-		switch v.(type) { // type 是自动补全的
+		switch v.(type) { // type 是解释器会自动赋值的
 		case string:
 			fmt.Printf("the index [%d] is [%T]\n", i, v)
 		case float32, float64:
@@ -39,10 +39,10 @@ func test2(a ...interface{}) {
 
 func main() {
 	var c student
-	//	test(c)
+	test(c)
 
-	//	var b int
-	//	b = 10
-	//	test(b)
+	var b int
+	b = 10
+	test(b)
 	test2(1, 3.322, "fuck man", c, &c)
 }

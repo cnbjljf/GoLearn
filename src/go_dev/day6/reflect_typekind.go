@@ -13,7 +13,7 @@ type student struct {
 }
 
 func test(b interface{}) {
-	t := reflect.TypeOf(b) // 获取类型
+	t := reflect.TypeOf(b) // 获取类型，是自定义下的什么类型。
 	fmt.Println(t)
 
 	v := reflect.ValueOf(b) // 获取值
