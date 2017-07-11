@@ -2,9 +2,9 @@
 package main
 
 import (
-	"encoding/json"
+	//	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	//	"io/ioutil"
 	//	"os"
 )
 
@@ -36,10 +36,22 @@ func main() {
 	//	f.Write(hehe)
 	//	f.Sync()
 
-	ab, _ := ioutil.ReadFile("d:/student_info.txt")
-	json.Unmarshal(ab, &aa)
-	fmt.Println(aa)
-	aa[3] = "cc"
-	fmt.Println(aa)
+	//	ab, _ := ioutil.ReadFile("d:/student_info.txt")
+	//	json.Unmarshal(ab, &aa)
+	//	fmt.Println(aa)
+	//	aa[3] = "cc"
+	//	fmt.Println(aa)
+
+	var i = 0
+	for i < 100 {
+		_, ok := aa[i]
+		fmt.Println(i, ok)
+		i++
+	}
+	fmt.Println(i + 1)
+	for i < 200 {
+		fmt.Println(i)
+		i++
+	}
 
 }

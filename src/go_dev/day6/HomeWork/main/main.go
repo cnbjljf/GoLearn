@@ -21,18 +21,18 @@ var bookJson map[int]book.Book
 
 func savebookJsonData(bk bookJson) bool{
 	// 保存图书信息到文本文件的
-	// 先读取文件里买的数据，然后在写入，避免覆盖之前的数据
-
-	
-	
-	f , err := os.Open(bookDataFilePath)
+	f , err := os.Create(bookDataFilePath)
 	
 	if err != nil {
-		fmt.Println("happend a error:",err)
+		fmt.Println("Saving data  happend a error:",err){
 		return false
 	}
 	bkJsonData := json.Marshal(bookJson)
-	
+	f.Write(bkJsonData)
+	f.Sync()
+	defer f.Close()
+	fmt.Println("Saving data successfully")
+	return true
 }
 
 
@@ -40,15 +40,23 @@ func savebookJsonData(bk bookJson) bool{
 func AddBook(){
 	bookJson = make(map[int]book.Book)
 	// 增加书籍的，录入书籍的信息的格式必须是  书名,作者,出版时间,多少本   必须以逗号分隔。
-	oldF , err := ioutil.ReadFile(bookDataFilePath)	
+	// 先读取文件里买的数据，然后在写入，避免覆盖之前的数据
+	oldF , err := ioutil.ReadFile(bookDataFilePath)	   // 读取文本数据
 	if err != nil {
 		fmt.Println("happend a error:",err)
 		return false
 	}
-	oldData , _ := json.Unmarshal(oldF,&bookJson)
-
-
+	oldData , _ := json.Unmarshal(oldF,&bookJson)  // 加载之前的数据
 	var i = 0
+	
+	for i < StockNum {  // 这个循环来标记出我们存入到文件的数据现在到多少本了,不能超过库存容量
+		_, ok := oldData[i]
+		if ok == false {
+			break
+		}
+		i++	
+	}
+	
 	for i<StockNum {
 		fmt.Println("Please Input your book's infoenter quit will quit this func, and the format is ")
 		fmt.Println(" name, author ,published , how many")
@@ -87,9 +95,15 @@ func AddBook(){
 //			fmt.Println("happed a error:",err)
 //			return 
 //		}
-		oldData[]
-		
+		oldData[i] = bookInfo
+		i++
 	}
+	if savebookJsonData(oldData) {
+		return
+	}else{
+		fmt.Println()
+	}
+	
 }
 
 
