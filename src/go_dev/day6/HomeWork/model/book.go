@@ -3,10 +3,9 @@ package model
 
 import (
 	"errors"
-	"fmt"
 )
 
-const (
+var (
 	ErrStockNotEnough = errors.New("the libraray don't have enough books ")
 )
 
@@ -22,26 +21,25 @@ func (b *Book) canBorrow(many int) bool {
 }
 
 func (b *Book) Borrow(c int) (err error) {
-	if b.canBorrow == false {
+	if b.canBorrow(c) == false {
 		err = ErrStockNotEnough
 		return
 	}
-	b.Total - c
+	b.Total = b.Total - c
 	return
 }
 
 func (b *Book) Back(many int) (err error) {
-	b.Total = b.Total + int
+	b.Total = b.Total + many
 	return
 }
 
-func (b *Book) FindBook(name string) (*Book, bool) {
-	var bk = b
-	for b != nil {
-		if b.Name == name || b.Author == name {
-			return b, true
-		}
-		b = b.Next
-	}
-	return bk, false
-}
+//func (b *Book) FindBook(bkjson map[int]book.Book, name string) (*Book, bool) {
+
+//	for b != nil {
+//		if b.Name == name || b.Author == name {
+//			return b, true
+//		}
+//	}
+//	return bk, false
+//}
