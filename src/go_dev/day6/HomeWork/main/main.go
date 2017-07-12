@@ -20,6 +20,7 @@ const (
 )
 
 var bookJson map[int]model.Book
+var stuJson map[int]model.Student
 
 func Exist(filename string) bool { // 判断指定文件是否存在的
 	_, err := os.Stat(filename)
@@ -29,7 +30,6 @@ func Exist(filename string) bool { // 判断指定文件是否存在的
 func savebookJsonData(bk map[int]model.Book) bool {
 	// 保存图书信息到文本文件的
 	f, err := os.Create(bookDataFilePath)
-
 	if err != nil {
 		log.Fatalln("Saving data  happend a error:", err)
 		return false
@@ -46,6 +46,7 @@ func savebookJsonData(bk map[int]model.Book) bool {
 }
 
 func AddBook() {
+
 	// 增加书籍的，录入书籍的信息的格式必须是  书名,作者,出版时间,多少本   必须以逗号分隔。
 	// 先读取文件里买的数据，然后在写入，避免覆盖之前的数据
 	bookJson = make(map[int]model.Book)
@@ -53,7 +54,7 @@ func AddBook() {
 	if Exist(bookDataFilePath) { // 先判断文件是否存在，存在才读取老文件
 		oldF, err := ioutil.ReadFile(bookDataFilePath) // 读取文本数据
 		if err != nil {
-			log.Fatalln("happend a error:", err)
+			log.Fatalln("read file happend a error:", err)
 			return
 		}
 		fmt.Println("find the  book's  data file and then ready to load it!!these are exist book!")
@@ -117,9 +118,49 @@ func AddBook() {
 	if savebookJsonData(bookJson) {
 		return
 	} else {
-		fmt.Println()
+		fmt.Println("Save data happend a error!")
+	}
+}
+
+func AddStu() {
+	// 添加学生信息的，录入学生的信息必须是i
+	stuJson = make(map[int]model.Student)
+
+	if Exist(bookDataFilePath) { // 先判断文件是否存在，存在才读取老文件
+		oldF, err := ioutil.ReadFile(stuDataFilePath) // 读取文本数据
+		if err != nil {
+			log.Fatalln("read file happend a error:", err)
+			return
+		}
+		fmt.Println("find the  student's  data file and then ready to load it!!these are exist student!")
+		json.Unmarshal(oldF, &stuJson) // 加载之前的数据
+		for k, v := range stuJson {
+			fmt.Printf("ID: %d, book:%v\n", k, v)
+		}
 	}
 
+	var i = 0
+
+	for i < StockNum { // 这个循环来标记出我们存入到文件的数据现在到多少本了,不能超过库存容量
+		_, ok := bookJson[i]
+		if ok == false {
+			break
+		}
+		i++
+	}
+
+	for i < StockNum {
+		fmt.Println("Please Input your student's infomation,enter quit will quit this func, and the format is ")
+		fmt.Println(" name, ID ,sex , age")
+		fmt.Println("举个例子：    aaa,Leo,20170705,12 , 必须以逗号分隔")
+
+		reader := bufio.NewReader(os.Stdin)
+		result, _, err := reader.ReadLine()
+		if err != nil {
+			fmt.Println("happed a error:", err)
+			return
+		}	
+	
 }
 
 func main() {
@@ -148,7 +189,8 @@ func main() {
 		switch i {
 		case 1:
 			AddBook()
-			//		case 2:
+		case 2:
+			AddStu()
 
 			//		case 3:
 			//			showStu(addStudent(&stuInit))
@@ -165,20 +207,5 @@ func main() {
 			fmt.Println("you weren't input a available choice!!")
 			continue
 		}
-
-		//	f, err := os.Create("d:/student_info.txt")
-		//	if err != nil {
-		//		fmt.Println("fail to open file student_info.txt ")
-		//	}
-		//	defer f.Close()
-		//	var he map[int]string
-		//	he = make(map[int]string)
-		//	he[1] = "1111"
-		//	he[2] = "2222"
-
-		//	hehe, _ := json.Marshal(he)
-
-		//	f.Write(hehe)
-		//	f.Sync()
 	}
 }
