@@ -5,6 +5,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"go_dev/day6/HomeWork/constValue" // 定义一些常量，相当于配置文件一样
 	"go_dev/day6/HomeWork/model"
 	"io/ioutil"
 	"log"
@@ -14,36 +15,11 @@ import (
 )
 
 const (
-	StockNum         = 10000 // 图书馆图书容量
-	bookDataFilePath = "d:/bookData.json"
-	stuDataFilePath  = "d:/studentData.json"
+	StockNum = 10000 // 图书馆图书容量
 )
 
 var bookJson map[int]model.Book
 var stuJson map[int]model.Student
-
-func Exist(filename string) bool { // 判断指定文件是否存在的
-	_, err := os.Stat(filename)
-	return err == nil || os.IsExist(err)
-}
-
-func savebookJsonData(bk map[int]model.Book) bool {
-	// 保存图书信息到文本文件的
-	f, err := os.Create(bookDataFilePath)
-	if err != nil {
-		log.Fatalln("Saving data  happend a error:", err)
-		return false
-	}
-	bkJsonData, _ := json.Marshal(bookJson)
-	f.Write(bkJsonData)
-	f.Sync()
-	defer f.Close()
-	fmt.Println("Saving data successfully!! these book infomation is :")
-	for k, v := range bk {
-		fmt.Printf("ID: %d, book:%v\n", k, v)
-	}
-	return true
-}
 
 func AddBook() {
 
@@ -51,17 +27,10 @@ func AddBook() {
 	// 先读取文件里买的数据，然后在写入，避免覆盖之前的数据
 	bookJson = make(map[int]model.Book)
 
-	if Exist(bookDataFilePath) { // 先判断文件是否存在，存在才读取老文件
-		oldF, err := ioutil.ReadFile(bookDataFilePath) // 读取文本数据
-		if err != nil {
-			log.Fatalln("read file happend a error:", err)
-			return
-		}
-		fmt.Println("find the  book's  data file and then ready to load it!!these are exist book!")
-		json.Unmarshal(oldF, &bookJson) // 加载之前的数据
-		for k, v := range bookJson {
-			fmt.Printf("ID: %d, book:%v\n", k, v)
-		}
+	bookJson, err := model.GetStuOldData() //先判断文件是否存在，存在才读取老文件
+	if err != nil {
+		log.Fatalln(err)
+		return
 	}
 
 	var i = 0
@@ -107,15 +76,10 @@ func AddBook() {
 			Author:     author,
 			CreateTime: published,
 		}
-		//		bookJsonInfo,err = json.Marshal(bookInfo)
-		//		if  err!=nil {
-		//			fmt.Println("happed a error:",err)
-		//			return
-		//		}
 		bookJson[i] = bookInfo
 		i++
 	}
-	if savebookJsonData(bookJson) {
+	if model.SavebookJsonData(bookJson) {
 		return
 	} else {
 		fmt.Println("Save data happend a error!")
@@ -126,41 +90,63 @@ func AddStu() {
 	// 添加学生信息的，录入学生的信息必须是i
 	stuJson = make(map[int]model.Student)
 
-	if Exist(bookDataFilePath) { // 先判断文件是否存在，存在才读取老文件
-		oldF, err := ioutil.ReadFile(stuDataFilePath) // 读取文本数据
-		if err != nil {
-			log.Fatalln("read file happend a error:", err)
-			return
-		}
-		fmt.Println("find the  student's  data file and then ready to load it!!these are exist student!")
-		json.Unmarshal(oldF, &stuJson) // 加载之前的数据
-		for k, v := range stuJson {
-			fmt.Printf("ID: %d, book:%v\n", k, v)
-		}
+	stuJson, err := model.GetStuOldData() //先判断文件是否存在，存在才读取老文件
+	if err != nil {
+		log.Fatalln(err)
+		return
 	}
 
 	var i = 0
-
-	for i < StockNum { // 这个循环来标记出我们存入到文件的数据现在到多少本了,不能超过库存容量
-		_, ok := bookJson[i]
+	for { // 这个循环来标记出我们存入到文件的数据现在到多少本了,不能超过库存容量
+		_, ok := stuJson[i]
 		if ok == false {
 			break
 		}
 		i++
 	}
 
-	for i < StockNum {
+	for {
 		fmt.Println("Please Input your student's infomation,enter quit will quit this func, and the format is ")
 		fmt.Println(" name, ID ,sex , age")
-		fmt.Println("举个例子：    aaa,Leo,20170705,12 , 必须以逗号分隔")
+		fmt.Println("举个例子：    Leo,0001,man,12 , 必须以逗号分隔")
 
 		reader := bufio.NewReader(os.Stdin)
 		result, _, err := reader.ReadLine()
 		if err != nil {
 			fmt.Println("happed a error:", err)
 			return
-		}	
-	
+		}
+		rawData := strings.Split(string(result), ",")
+		name := strings.TrimSpace(rawData[0])
+		if name == "quit" {
+			fmt.Println("exit to the add student")
+			break
+		}
+		if len(rawData) != 4 {
+			fmt.Println("you weren't provide some right arguments")
+			continue
+		}
+		ID, _ := strconv.Atoi(strings.TrimSpace(rawData[1]))
+		sex := strings.TrimSpace(rawData[2])
+		age, _ := strconv.Atoi(strings.TrimSpace(rawData[3]))
+		if name == "" && ID == 0 && sex == "" && age == 0 {
+			continue
+		}
+		stu := model.Student{
+			Name: name,
+			ID:   ID,
+			Sex:  sex,
+			Age:  age,
+		}
+		stuJson[i] = stu
+		i++
+	}
+	model.SaveStuData(stuJson)
+}
+
+func BorrowBook() {
+	// 借书的功能
+
 }
 
 func main() {
@@ -192,8 +178,8 @@ func main() {
 		case 2:
 			AddStu()
 
-			//		case 3:
-			//			showStu(addStudent(&stuInit))
+		case 3:
+			BorrowBook()
 			//		case 4:
 			//			borrowBook(&bInit, &stuInit)
 

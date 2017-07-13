@@ -2,7 +2,12 @@
 package model
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
+	"go_dev/day6/HomeWork/constValue"
+	"log"
+	"os"
 )
 
 var (
@@ -43,3 +48,21 @@ func (b *Book) Back(many int) (err error) {
 //	}
 //	return bk, false
 //}
+
+func SavebookJsonData(bk map[int]Book) bool {
+	// 保存图书信息到文本文件的
+	f, err := os.Create(constValue.BookDataFilePath)
+	if err != nil {
+		log.Fatalln("Saving data  happend a error:", err)
+		return false
+	}
+	bkJsonData, _ := json.Marshal(bk)
+	f.Write(bkJsonData)
+	f.Sync()
+	defer f.Close()
+	fmt.Println("Saving data successfully!! these book infomation is :")
+	for k, v := range bk {
+		fmt.Printf("ID: %d, book:%v\n", k, v)
+	}
+	return true
+}

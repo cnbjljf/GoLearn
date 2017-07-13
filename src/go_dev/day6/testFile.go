@@ -2,9 +2,9 @@
 package main
 
 import (
-	"encoding/json"
+	//	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	//	"io/ioutil"
 	"os"
 )
 
@@ -22,8 +22,8 @@ func Exist(filename string) bool {
 
 func main() {
 
-	var aa map[int]Book
-	aa = make(map[int]Book)
+	//	var aa map[int]Book
+	//	aa = make(map[int]Book)
 	//	aa[1] = "aaa"
 	//	aa[2] = "bbb"
 	//	d, _ := json.Marshal(aa)
@@ -69,23 +69,23 @@ func main() {
 	//	}
 	filename := "d:/bookData.json"
 	fmt.Println(Exist(filename))
-	fmt.Println(os.Stat(filename))
-	fmt.Println()
-	_, err := os.Stat(filename)
-	fmt.Println(os.IsExist(err), os.IsNotExist(err))
-	if err != nil || os.IsNotExist(err) {
-		fmt.Println("file  exist")
-		ab, _ := ioutil.ReadFile(filename)
-		json.Unmarshal(ab, &aa)
-		//		fmt.Println(aa)
-		for k, v := range aa {
-			fmt.Println(k, v)
-		}
-		//		aa[3] = "cc"
-		//		fmt.Println(aa)
-		//		fmt.Println(aa[3])
+	//	fmt.Println(os.Stat(filename))
+	//	fmt.Println()
+	//	_, err := os.Stat(filename)
+	//	fmt.Println(os.IsExist(err), os.IsNotExist(err))
+	//	if err != nil || os.IsNotExist(err) {
+	//		fmt.Println("file  exist")
+	//		ab, _ := ioutil.ReadFile(filename)
+	//		json.Unmarshal(ab, &aa)
+	//		//		fmt.Println(aa)
+	//		for k, v := range aa {
+	//			fmt.Println(k, v)
+	//		}
+	//		//		aa[3] = "cc"
+	//		//		fmt.Println(aa)
+	//		//		fmt.Println(aa[3])
 
-	}
+	//	}
 	fmt.Println("done")
 	//		filename := "a-nonexistent-file"
 	//		if _, err := os.Stat(filename); os.IsNotExist(err) {
