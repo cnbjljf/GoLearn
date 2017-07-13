@@ -144,54 +144,85 @@ func AddStu() {
 	model.SaveStuData(stuJson)
 }
 
-func BorrowBook() {
+func BorrowBook(name string) (bool) {
 	// 借书的功能
+	/* 
+	name : Username ==> admin or student's name
+	*/
+	
+	
+	
 
 }
 
 func main() {
+	_ , ok := constValue.LoginAdmin()
+	if ok {
+		for {
+			fmt.Println(constValue.AdminMsg)
+			reader := bufio.NewReader(os.Stdin)
+			result, _, err := reader.ReadLine()
+			if err != nil {
+				fmt.Println("happend a error: ", err)
+				return
+			}
+			input := strings.TrimSpace(string(result))
+			if len(input) != 1 {
+				continue
+			}
+			i, _ := strconv.Atoi(string(input[0]))
 
-	msg := `
-1. 添加图书信息
-2. 添加学生信息
-3. 借书
-4. 后台管理（删除书籍与学生信息）
-5. 显示当前注册的图书
-6. 显示当前注册的学生信息`
-	for {
-		fmt.Println(msg)
-		reader := bufio.NewReader(os.Stdin)
-		result, _, err := reader.ReadLine()
-		if err != nil {
-			fmt.Println("happend a error: ", err)
-			return
-		}
-		input := strings.TrimSpace(string(result))
-		if len(input) != 1 {
-			continue
-		}
-		i, _ := strconv.Atoi(string(input[0]))
+			switch i {
+			case 1:
+				AddBook()
+			case 2:
+				AddStu()
 
-		switch i {
-		case 1:
-			AddBook()
-		case 2:
-			AddStu()
+			case 3:
+				BorrowBook()
+				//		case 4:
+				//			borrowBook(&bInit, &stuInit)
 
-		case 3:
-			BorrowBook()
-			//		case 4:
-			//			borrowBook(&bInit, &stuInit)
-
-			//		case 5:
-			//			management(&bInit, &stuInit)
-			//		case 6:
-			//			showBook(&bInit)
-			//		case 7:
-			//			showStu(&stuInit)
-		default:
-			fmt.Println("you weren't input a available choice!!")
-			continue
+				//		case 5:
+				//			management(&bInit, &stuInit)
+				//		case 6:
+				//			showBook(&bInit)
+				//		case 7:
+				//			showStu(&stuInit)
+			case 7：
+				break
+			default:
+				fmt.Println("you weren't input a available choice!!")
+				continue
+			}
 		}
 	}
+	_ ,ok := model.LoginStu()
+	if ok {
+		for {
+			fmt.Println(constValue.CustonmerMsg)
+			reader := bufio.NewReader(os.Stdin)
+			result, _, err := reader.ReadLine()
+			if err != nil {
+				fmt.Println("happend a error: ", err)
+				return
+			}
+			input := strings.TrimSpace(string(result))
+			if len(input) != 1 {
+				continue
+			}
+			i, _ := strconv.Atoi(string(input[0]))
+
+			switch i {
+			case 1:
+				BorrowBook()
+			case 2:
+				ReturnBook()
+			case 3:
+				break
+						default:
+				fmt.Println("you weren't input a available choice!!")
+				continue
+	}
+
 }

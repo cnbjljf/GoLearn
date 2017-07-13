@@ -61,11 +61,32 @@ func GetStuOldData() (stuJson map[int]Student, err error) {
 		}
 		fmt.Println("find the  student's  data file and then ready to load it!!these are exist student!")
 		json.Unmarshal(oldF, &stuJson) // 加载之前的数据
-		for k, v := range stuJson {
-			fmt.Printf("ID: %d, student:%v\n", k, v)
-		}
+//		for k, v := range stuJson {
+//			fmt.Printf("ID: %d, student:%v\n", k, v)
+//		}
 		return stuJson, nil
 	} else {
 		return stuJson, LoadOldDataError
 	}
+}
+
+
+func LoginStu() (role string,bool){
+	// Student登录的检查
+	var name string
+	var pwd string
+	fmt.Println("请输入用户名")
+	fmt.Scanln(&name)
+	fmt.Println("请输入ID")
+	fmt.Scanln(&pwd)
+	data,err := GetStuOldData()
+	if err !=nil {
+		log.Fatalln("happend a error when loading data")
+	}
+	for _,v := range {
+		if name == v["Name"] && pwd == v["ID"] {
+			return "student",true
+		}
+	}
+	return "",false
 }
