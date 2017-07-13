@@ -3,7 +3,6 @@ package model
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"go_dev/day6/HomeWork/constValue"
 	"io/ioutil"
@@ -11,18 +10,15 @@ import (
 	"os"
 )
 
-var (
-	LoadOldDataError = errors.New("load the student's data happend a error")
-)
+var stuJson map[int]Student
 
 type Student struct {
-	Name string
-	ID   int
-	Sex  string
-	Age  int
+	Name      string
+	ID        int
+	Sex       string
+	Age       int
+	BrrowBook []Book
 }
-
-var stuJson map[int]Student
 
 func SaveStuData(j map[int]Student) bool {
 	// 保存学生信息到文本内容里面
@@ -39,10 +35,10 @@ func SaveStuData(j map[int]Student) bool {
 	f.Write(stuJson)
 	f.Sync()
 	defer f.Close()
-	for k, v := range j {
-		fmt.Printf("ID: %d, student:%v\n", k, v)
-	}
-	fmt.Println("save student's data successfully!!")
+	//	for k, v := range j {
+	//		fmt.Printf("ID: %d, student:%v\n", k, v)
+	//	}
+	fmt.Println("saving student's data successfully!!")
 	return true
 }
 
@@ -61,32 +57,26 @@ func GetStuOldData() (stuJson map[int]Student, err error) {
 		}
 		fmt.Println("find the  student's  data file and then ready to load it!!these are exist student!")
 		json.Unmarshal(oldF, &stuJson) // 加载之前的数据
-//		for k, v := range stuJson {
-//			fmt.Printf("ID: %d, student:%v\n", k, v)
-//		}
+		//		for k, v := range stuJson {
+		//			fmt.Printf("ID: %d, student:%v\n", k, v)
+		//		}
 		return stuJson, nil
 	} else {
-		return stuJson, LoadOldDataError
+		return stuJson, nil
 	}
 }
 
-
-func LoginStu() (role string,bool){
+func LoginStu(name string, pwd int) (data map[int]Student, ok bool) {
 	// Student登录的检查
-	var name string
-	var pwd string
-	fmt.Println("请输入用户名")
-	fmt.Scanln(&name)
-	fmt.Println("请输入ID")
-	fmt.Scanln(&pwd)
-	data,err := GetStuOldData()
-	if err !=nil {
+	data, err := GetStuOldData()
+	if err != nil {
 		log.Fatalln("happend a error when loading data")
+		return data, false
 	}
-	for _,v := range {
-		if name == v["Name"] && pwd == v["ID"] {
-			return "student",true
+	for _, v := range data {
+		if name == v.Name && pwd == v.ID {
+			return data, true
 		}
 	}
-	return "",false
+	return data, false
 }

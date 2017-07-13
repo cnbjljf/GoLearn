@@ -3,13 +3,12 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"go_dev/day6/HomeWork/constValue" // 定义一些常量，相当于配置文件一样
 	"go_dev/day6/HomeWork/model"
-	"io/ioutil"
 	"log"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -27,7 +26,7 @@ func AddBook() {
 	// 先读取文件里买的数据，然后在写入，避免覆盖之前的数据
 	bookJson = make(map[int]model.Book)
 
-	bookJson, err := model.GetStuOldData() //先判断文件是否存在，存在才读取老文件
+	bookJson, err := model.GetBookOldData() //先判断文件是否存在，存在才读取老文件
 	if err != nil {
 		log.Fatalln(err)
 		return
@@ -93,7 +92,6 @@ func AddStu() {
 	stuJson, err := model.GetStuOldData() //先判断文件是否存在，存在才读取老文件
 	if err != nil {
 		log.Fatalln(err)
-		return
 	}
 
 	var i = 0
@@ -144,19 +142,101 @@ func AddStu() {
 	model.SaveStuData(stuJson)
 }
 
-func BorrowBook(name string) (bool) {
+func BorrowBook(userName string, stuData map[int]model.Student) {
 	// 借书的功能
-	/* 
-	name : Username ==> admin or student's name
-	*/
-	
-	
-	
+	var choice string
+	for {
+		showDetail("book")
+
+		fmt.Println("请输入书名,每次只能借一本")
+		reader := bufio.NewReader(os.Stdin)
+		result, _, err := reader.ReadLine()
+		choice = strings.TrimSpace(string(result))
+		data, err := model.GetBookOldData()
+		if err != nil {
+			fmt.Println("show the detail of book's info happend a error:", err)
+		}
+
+		if choice == "quit" {
+			break
+		}
+		for i, v := range data { // 遍历图书map
+			if choice == v.Name {
+				if v.Total-1 >= 0 { // 输入正确的图书名且图书存量大于1，那么可以外借
+					for ii, tmp := range stuData { // 找到这个学生的信息，
+						if userName == tmp.Name {
+							//把借书的信息和学生信息进行绑定
+							stuV := stuData[ii]
+							stuV.BrrowBook = append(stuV.BrrowBook, v)
+							stuData[ii] = stuV
+							fmt.Println(stuData)
+							model.SaveStuData(stuData)
+						}
+					}
+					// 下面几步对图书存量-1
+					tmp := data[i]
+					tmp.Total--
+					data[i] = tmp
+					//					fmt.Println(data[i])
+					model.SavebookJsonData(data)
+					fmt.Println("借书成功，书名:[", choice, "]该本书存量:[", data[i].Total, "]")
+				} else {
+					fmt.Println("该本书没有剩余了，请等待他人归还再借！")
+				}
+			}
+		}
+	}
+}
+
+func ReturnBook() bool {
+	// 还书的功能
+
+	return true
+}
+
+func showDetail(name string) {
+	// 根据name值来显示图书或者学生的详细信息
+	var idList []int
+	if name == "student" {
+		data, err := model.GetStuOldData()
+		if err != nil {
+			fmt.Println("show the detail of student's info happend a error:", err)
+		}
+
+		for id, _ := range data {
+			idList = append(idList, id)
+		}
+		sort.Ints(idList)
+		for _, k := range idList {
+			item := data[k]
+			fmt.Printf("%d. name: %s ,id: %d,sex: %s,age: %d\n", k, item.Name, item.ID, item.Sex, item.Age)
+		}
+	} else if name == "book" {
+		data, err := model.GetBookOldData()
+		if err != nil {
+			fmt.Println("show the detail of book's info happend a error:", err)
+		}
+		for id, _ := range data {
+			idList = append(idList, id)
+		}
+		sort.Ints(idList)
+		for _, k := range idList {
+			item := data[k]
+			fmt.Printf("%d. name: %-8s ,author: %-8s ,stock: %-5d,published time: %-12s\n",
+				k, item.Name, item.Author, item.Total, item.CreateTime)
+		}
+	}
 
 }
 
 func main() {
-	_ , ok := constValue.LoginAdmin()
+	var name string
+	var pwd string
+	fmt.Println("请输入用户名")
+	fmt.Scanln(&name)
+	fmt.Println("请输入密码")
+	fmt.Scanln(&pwd)
+	_, ok := constValue.LoginAdmin(name, pwd)
 	if ok {
 		for {
 			fmt.Println(constValue.AdminMsg)
@@ -178,26 +258,25 @@ func main() {
 			case 2:
 				AddStu()
 
-			case 3:
-				BorrowBook()
+				//			case 3:
+				//				BorrowBook(name, data)
 				//		case 4:
 				//			borrowBook(&bInit, &stuInit)
 
-				//		case 5:
-				//			management(&bInit, &stuInit)
-				//		case 6:
-				//			showBook(&bInit)
-				//		case 7:
-				//			showStu(&stuInit)
-			case 7：
-				break
+			case 3:
+				showDetail("student")
+			case 4:
+				showDetail("book")
+			case 5:
+				return
 			default:
 				fmt.Println("you weren't input a available choice!!")
 				continue
 			}
 		}
 	}
-	_ ,ok := model.LoginStu()
+	pwdID, _ := strconv.Atoi(pwd)
+	data, ok := model.LoginStu(name, pwdID)
 	if ok {
 		for {
 			fmt.Println(constValue.CustonmerMsg)
@@ -215,14 +294,16 @@ func main() {
 
 			switch i {
 			case 1:
-				BorrowBook()
+				BorrowBook(name, data)
 			case 2:
 				ReturnBook()
 			case 3:
-				break
-						default:
+				return
+			default:
 				fmt.Println("you weren't input a available choice!!")
 				continue
+			}
+		}
 	}
-
+	fmt.Println("错误的用户名或者密码！！！")
 }

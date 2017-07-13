@@ -3,24 +3,20 @@
 package constValue
 
 import (
-	"fmt"
 	"os"
-	"bufio"
 )
 
 const (
 	BookDataFilePath = "d:/bookData.json"
 	StuDataFilePath  = "d:/studentData.json"
-	AdminMsg := `
+	AdminMsg         = `
 	1. 添加图书信息
 	2. 添加学生信息
-	3. 借书
-	4. 后台管理（删除书籍与学生信息）
-	5. 显示当前注册的图书
-	6. 显示当前注册的学生信息
-	7. 显示当前注册的学生信息`
-	
-	
+	3. 后台管理（删除书籍与学生信息）
+	4. 显示当前注册的图书
+	5. 显示当前注册的学生信息
+	6. 退出`
+
 	CustonmerMsg = `
 	1. 借书
 	2. 还书
@@ -33,18 +29,10 @@ func Exist(filename string) bool { // 判断指定文件是否存在的
 	return err == nil || os.IsExist(err)
 }
 
-
-func LoginAdmin() (role string,bool){
+func LoginAdmin(name, pwd string) (role string, ok bool) {
 	// admin登录的检查
-	var name string
-	var pwd string
-	fmt.Println("请输入用户名")
-	fmt.Scanln(&name)
-	fmt.Println("请输入密码")
-	fmt.Scanln(&pwd)
-	
-	if name == "admin" && pwd == "123456"{
-		return "admin",true
+	if name == "admin" && pwd == "123456" {
+		return "admin", true
 	}
-	return "",false
+	return "", false
 }
