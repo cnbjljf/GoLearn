@@ -13,8 +13,8 @@ const (
 	1. 添加图书信息
 	2. 添加学生信息
 	3. 后台管理（删除书籍与学生信息）
-	4. 显示当前注册的图书
-	5. 显示当前注册的学生信息
+	4. 显示当前注册的学生信息
+	5. 显示当前注册的图书
 	6. 退出`
 
 	CustonmerMsg = `
@@ -31,7 +31,7 @@ func Exist(filename string) bool { // 判断指定文件是否存在的
 
 func LoginAdmin(name, pwd string) (role string, ok bool) {
 	// admin登录的检查
-	if name == "admin" && pwd == "123456" {
+	if name == "admin" && pwd == "111" {
 		return "admin", true
 	}
 	return "", false

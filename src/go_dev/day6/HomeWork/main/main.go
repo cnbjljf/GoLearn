@@ -188,10 +188,59 @@ func BorrowBook(userName string, stuData map[int]model.Student) {
 	}
 }
 
-func ReturnBook() bool {
+func ReturnBook(name string, stuData map[int]model.Student) {
 	// 还书的功能
+	fmt.Printf("这些是你借到的书籍：\n")
+	var BorrowBookNum map[string]int // 统计每本书借了多少本
+	BorrowBookNum = make(map[string]int)
+	for {
+		for _, v := range stuData {
+			if name == v.Name {
+				for _, book := range v.BrrowBook {
+					value, ok := BorrowBookNum[book.Name]
+					if ok { // 意味着有值
+						BorrowBookNum[book.Name] = value + 1
+					} else {
+						BorrowBookNum[book.Name] = 1
+					}
+				}
+				fmt.Printf("%-13s%-5s", "书名", "数量\n")
+				fmt.Println()
+				for k, v := range BorrowBookNum {
+					fmt.Printf("%-15s%-5d\n", k, v)
+				}
+			}
+		}
+		fmt.Printf("\n请输入书名\n")
+		reader := bufio.NewReader(os.Stdin)
+		result, _, _ := reader.ReadLine()
+		bookName := strings.TrimSpace(string(result))
+		if bookName == "quit" {
+			return
+		}
+		_, ok := BorrowBookNum[bookName]
+		if ok {
+			for k, v := range stuData {
+				if name == v.Name {
+					var leftBook []model.Book
+					for _, book := range v.BrrowBook {
+						if bookName != book.Name {
+							leftBook = append(leftBook, book)
+						}
+					}
+					fmt.Println(leftBook)
+					fmt.Println(v.BrrowBook)
+					v.BrrowBook = leftBook
+					stuData[k] = v
+					fmt.Println("还书成功！！！")
+				}
+			}
+		} else {
+			fmt.Println("没有找到这本书在你已借书列表里面，请确认书名！！")
+		}
+	}
 
-	return true
+	return
 }
 
 func showDetail(name string) {
@@ -207,10 +256,12 @@ func showDetail(name string) {
 			idList = append(idList, id)
 		}
 		sort.Ints(idList)
+		fmt.Println("======================= student ===================================")
 		for _, k := range idList {
 			item := data[k]
-			fmt.Printf("%d. name: %s ,id: %d,sex: %s,age: %d\n", k, item.Name, item.ID, item.Sex, item.Age)
+			fmt.Printf("%d. name: %-8s ,id: %-5d,sex: %-10s,age: %-2d\n", k, item.Name, item.ID, item.Sex, item.Age)
 		}
+		fmt.Println("==================================================================")
 	} else if name == "book" {
 		data, err := model.GetBookOldData()
 		if err != nil {
@@ -220,13 +271,18 @@ func showDetail(name string) {
 			idList = append(idList, id)
 		}
 		sort.Ints(idList)
+		fmt.Println("====================== BOOK ======================================")
 		for _, k := range idList {
 			item := data[k]
 			fmt.Printf("%d. name: %-8s ,author: %-8s ,stock: %-5d,published time: %-12s\n",
 				k, item.Name, item.Author, item.Total, item.CreateTime)
 		}
+		fmt.Println("==================================================================")
 	}
+}
 
+func manage() {
+	// 管理图书/学生信息的，主要是删除或者修改
 }
 
 func main() {
@@ -257,17 +313,13 @@ func main() {
 				AddBook()
 			case 2:
 				AddStu()
-
-				//			case 3:
-				//				BorrowBook(name, data)
-				//		case 4:
-				//			borrowBook(&bInit, &stuInit)
-
 			case 3:
-				showDetail("student")
+				manage()
 			case 4:
-				showDetail("book")
+				showDetail("student")
 			case 5:
+				showDetail("book")
+			case 6:
 				return
 			default:
 				fmt.Println("you weren't input a available choice!!")
@@ -296,7 +348,7 @@ func main() {
 			case 1:
 				BorrowBook(name, data)
 			case 2:
-				ReturnBook()
+				ReturnBook(name, data)
 			case 3:
 				return
 			default:

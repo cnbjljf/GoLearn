@@ -55,7 +55,7 @@ func GetStuOldData() (stuJson map[int]Student, err error) {
 			log.Fatalln("read file happend a error:", err)
 			return stuJson, LoadOldDataError
 		}
-		fmt.Println("find the  student's  data file and then ready to load it!!these are exist student!")
+		//fmt.Println("find the  student's  data file and then ready to load it!!these are exist student!")
 		json.Unmarshal(oldF, &stuJson) // 加载之前的数据
 		//		for k, v := range stuJson {
 		//			fmt.Printf("ID: %d, student:%v\n", k, v)
