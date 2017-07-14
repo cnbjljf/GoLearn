@@ -30,5 +30,26 @@ type book struct {
 }
 
 func main() {
+	var bl []book
+	for i := 0; i < 6; i++ {
+		var b = book{
+			Name: fmt.Sprintf("stu%d", i),
+		}
+		bl = append(bl, b)
+	}
 
+	var ss = stu{
+		Name:  "first",
+		bbook: bl,
+	}
+	fmt.Println(ss)
+	var b2 []book
+	for i := 10; i < 16; i++ {
+		var b = book{
+			Name: fmt.Sprintf("stu%d", i),
+		}
+		b2 = append(b2, b)
+	}
+	ss.bbook = b2
+	fmt.Println(ss)
 }

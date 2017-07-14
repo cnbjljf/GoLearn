@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"go_dev/day6/HomeWork/constValue" // 定义一些常量，相当于配置文件一样
 	"go_dev/day6/HomeWork/model"
-	"log"
 	"os"
 	"sort"
 	"strconv"
@@ -28,8 +27,7 @@ func AddBook() {
 
 	bookJson, err := model.GetBookOldData() //先判断文件是否存在，存在才读取老文件
 	if err != nil {
-		log.Fatalln(err)
-		return
+		fmt.Println(err)
 	}
 
 	var i = 0
@@ -91,7 +89,7 @@ func AddStu() {
 
 	stuJson, err := model.GetStuOldData() //先判断文件是否存在，存在才读取老文件
 	if err != nil {
-		log.Fatalln(err)
+		fmt.Println(err)
 	}
 
 	var i = 0
@@ -192,8 +190,9 @@ func ReturnBook(name string, stuData map[int]model.Student) {
 	// 还书的功能
 	fmt.Printf("这些是你借到的书籍：\n")
 	var BorrowBookNum map[string]int // 统计每本书借了多少本
-	BorrowBookNum = make(map[string]int)
+
 	for {
+		BorrowBookNum = make(map[string]int)
 		for _, v := range stuData {
 			if name == v.Name {
 				for _, book := range v.BrrowBook {
@@ -211,27 +210,40 @@ func ReturnBook(name string, stuData map[int]model.Student) {
 				}
 			}
 		}
-		fmt.Printf("\n请输入书名\n")
+		fmt.Printf("\n请输入书名,每次只能还一本\n")
 		reader := bufio.NewReader(os.Stdin)
 		result, _, _ := reader.ReadLine()
 		bookName := strings.TrimSpace(string(result))
 		if bookName == "quit" {
 			return
 		}
-		_, ok := BorrowBookNum[bookName]
+		returnBookNum := 1                 // 保留字段，用来调整每次默认还多少本书的数量，默认为1
+		num, ok := BorrowBookNum[bookName] // value 是还有多少本没有还
 		if ok {
 			for k, v := range stuData {
 				if name == v.Name {
 					var leftBook []model.Book
+					var i int
 					for _, book := range v.BrrowBook {
-						if bookName != book.Name {
+						if bookName == book.Name && i < num-returnBookNum {
+							leftBook = append(leftBook, book)
+							i++
+						} else if bookName != book.Name {
 							leftBook = append(leftBook, book)
 						}
+
 					}
-					fmt.Println(leftBook)
-					fmt.Println(v.BrrowBook)
 					v.BrrowBook = leftBook
 					stuData[k] = v
+					model.SaveStuData(stuData)
+					bookData, _ := model.GetBookOldData()
+					for k, v := range bookData {
+						if v.Name == bookName { // 找到这本书
+							v.Total = v.Total + returnBookNum
+							bookData[k] = v
+						}
+					}
+					model.SavebookJsonData(bookData)
 					fmt.Println("还书成功！！！")
 				}
 			}
@@ -239,7 +251,6 @@ func ReturnBook(name string, stuData map[int]model.Student) {
 			fmt.Println("没有找到这本书在你已借书列表里面，请确认书名！！")
 		}
 	}
-
 	return
 }
 
