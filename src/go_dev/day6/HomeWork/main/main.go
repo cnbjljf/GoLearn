@@ -222,9 +222,10 @@ func ReturnBook(name string, stuData map[int]model.Student) {
 		if ok {
 			for k, v := range stuData {
 				if name == v.Name {
-					var leftBook []model.Book
+					var leftBook []model.Book // 用来存放还有哪些书没有归还
 					var i int
 					for _, book := range v.BrrowBook {
+						// 如果书名相等并且书籍数量小于归还后剩余的数量，否则添加到leftBook数组里
 						if bookName == book.Name && i < num-returnBookNum {
 							leftBook = append(leftBook, book)
 							i++
