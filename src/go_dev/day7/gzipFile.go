@@ -18,6 +18,7 @@ func main() {
 	}
 	fz, err := gzip.NewReader(fi)
 	if err != nil {
+		y
 		fmt.Fprintf(os.Stderr, "open zip file faild,err:%v\n", err)
 		return
 	}
