@@ -295,6 +295,14 @@ func showDetail(name string) {
 
 func manage() {
 	// 管理图书/学生信息的，主要是删除或者修改
+	fmt.Println(constValue.ManageChoice)
+	inputer := bufio.Reader(os.Stdin)
+	result, _, err := inputer.ReadLine()
+	inputNum := strconv.Atoi(strings.TrimSpace(string(result)))
+	switch inputNum {
+	case 1:
+
+	}
 }
 
 func main() {
@@ -306,6 +314,7 @@ func main() {
 	fmt.Scanln(&pwd)
 	_, ok := constValue.LoginAdmin(name, pwd)
 	if ok {
+
 		for {
 			fmt.Println(constValue.AdminMsg)
 			reader := bufio.NewReader(os.Stdin)
@@ -322,18 +331,25 @@ func main() {
 
 			switch i {
 			case 1:
+				constValue.Logger(name, "add a book", "begin to add a book")
 				AddBook()
 			case 2:
+				constValue.Logger(name, "add a student", "begin to add a Student")
 				AddStu()
 			case 3:
+				constValue.Logger(name, "manage ", "going to manage platform")
 				manage()
 			case 4:
+				constValue.Logger(name, "show", "show the student's info")
 				showDetail("student")
 			case 5:
+				constValue.Logger(name, "show", "show the book's info")
 				showDetail("book")
 			case 6:
+				constValue.Logger(name, "exit", "exit the program!!!")
 				return
 			default:
+				constValue.Logger(name, "unavailable", "input a unavailable choice!!")
 				fmt.Println("you weren't input a available choice!!")
 				continue
 			}
@@ -358,16 +374,21 @@ func main() {
 
 			switch i {
 			case 1:
+				constValue.Logger(name, "borrow a book", "begin to borrow a book!!!")
 				BorrowBook(name, data)
 			case 2:
+				constValue.Logger(name, "return a book", "begin to return a book!!!")
 				ReturnBook(name, data)
 			case 3:
+				constValue.Logger(name, "exit", "exit the program!!!")
 				return
 			default:
+				constValue.Logger(name, "unavailable", "input a unavailable choice!!")
 				fmt.Println("you weren't input a available choice!!")
 				continue
 			}
 		}
 	}
+	constValue.Logger(name, "login", "unavailable username or password!!")
 	fmt.Println("错误的用户名或者密码！！！")
 }
