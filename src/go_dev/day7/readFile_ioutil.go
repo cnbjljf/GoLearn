@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	inputFile := "E:/111.txt"
-	outputFile := "e:/112.txt"
+	inputFile := "d:/111.txt"
+	outputFile := "d:/112.txt"
 	buf, err := ioutil.ReadFile(inputFile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "File error:%s", err)

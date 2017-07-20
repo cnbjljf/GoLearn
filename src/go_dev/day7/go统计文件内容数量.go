@@ -9,7 +9,11 @@ import (
 )
 
 func main() {
-	f, _ := os.Open("aaa.go")
+	f, err := os.Open("copyFile.go")
+	if err != nil {
+		fmt.Println("happed a error when open a file:", err)
+	}
+
 	reader := bufio.NewReader(f)
 	var azNum int
 	var intNum int
@@ -17,11 +21,12 @@ func main() {
 	var otherNum int
 	for {
 		rawstring, err := reader.ReadString('\n')
-		if err != io.EOF {
+		if err == io.EOF {
 			break
 		}
 		result := []rune(rawstring)
 		for _, key := range result {
+
 			//fmt.Printf("%v %T\n", key, key)
 			switch {
 			case key >= 'a' && key <= 'z':
