@@ -55,18 +55,29 @@ type book struct {
 //	fmt.Println(ss)
 //}
 
-func Logger(username, action string) {
+func Logger(username, action string, content interface{}) {
+	ct, ok := content.(string)
+	if ok == false {
+		fmt.Println(ok)
+		return
+	}
 	const LogFile = "d:/info.log"
 	f, err := os.OpenFile(LogFile, os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
 		fmt.Println("opening file happend a error!,", err)
 		return
 	}
-	logContent := fmt.Sprintf("%s user:[%s] action:[%s]\n", time.Now().Format("2006-01-02 15:04:05"), username, action)
+	logContent := fmt.Sprintf("%s user:[%s] action:[%s] info[%s]\n",
+		time.Now().Format("2006-01-02 15:04:05"), username, action, ct)
 	f.WriteString(logContent)
+	fmt.Println(logContent)
 	defer f.Close()
 }
 
 func main() {
-	Logger("admin", "delete")
+
+	var ss = book{
+		Name: "first",
+	}
+	Logger("admin", "delete", ss)
 }

@@ -29,8 +29,8 @@ const (
 	1. 管理学生信息
 	2. 管理图书信息
 	`
-	actionChoice = `
-	1. 删除
+	ActionChoice = `
+	1. 删除信息
 	2. 修改信息
 	`
 )
@@ -40,14 +40,15 @@ func Exist(filename string) bool { // 判断指定文件是否存在的
 	return err == nil || os.IsExist(err)
 }
 
-func Logger(username, action, content string) {
+func Logger(username, action string, content interface{}) {
+	ct, _ := content.(string)
 	f, err := os.OpenFile(LogFile, os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
 		fmt.Println("opening file happend a error!,", err)
 		return
 	}
 	logContent := fmt.Sprintf("%s user:[%s] action:[%s] info:[%s]\n", time.Now().Format("2006-01-02 15:04:05"),
-		username, action, content)
+		username, action, ct)
 	f.WriteString(logContent)
 	defer f.Close()
 }

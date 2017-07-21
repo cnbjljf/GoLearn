@@ -2,7 +2,7 @@
 package model
 
 import (
-	"strings"
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,6 +10,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 )
 
 var (
@@ -36,11 +38,6 @@ func (b *Book) Borrow(c int) (err error) {
 		return
 	}
 	b.Total = b.Total - c
-	return
-}
-
-func (b *Book) Back(many int) (err error) {
-	b.Total = b.Total + many
 	return
 }
 
@@ -87,62 +84,65 @@ func GetBookOldData() (bookInfo map[int]Book, err error) {
 	return bookInfo, NotFoundTheBookDataFile
 }
 
-func Delete(name string) bool{
+func Delete(username, name string) bool {
 	// 删除指定书籍的
-	bookNewInfo = make(map[int]Book)
-	bookInfo := GetBookOldData()
+	bookNewInfo := make(map[int]Book)
+	bookInfo, _ := GetBookOldData()
 	var i int
 	for _, item := range bookInfo {
 		if name == item.Name {
+			constValue.Logger(username, "delete a book", "the book ["+name+"]was deleted!")
 			continue
-		}else{
+		} else {
 			bookNewInfo[i] = item
 		}
+		i++
 	}
 	return SavebookJsonData(bookNewInfo)
 }
 
-
-func ManageBook() {
+func ManageBook(username string) {
 	// 管理图书的，包含的管理动作有删除与修改
-	bookInfo := GetBookOldData()
+	bookInfo, _ := GetBookOldData()
 	fmt.Println()
 	for _, item := range bookInfo {
-		fmt.Printf("name: %-8s ,author: %-8s ,stock: %-5d,published time: %-12s\n", 
-		item.Name, item.Author, item.Total, item.CreateTime)
+		fmt.Printf("name: %-8s ,author: %-8s ,stock: %-5d,published time: %-12s\n",
+			item.Name, item.Author, item.Total, item.CreateTime)
 	}
 	fmt.Println("请输入书名")
-	inputer := bufio.Reader(os.Stdin)
-	result, _, err := inputer.ReadLine()
+	inputer := bufio.NewReader(os.Stdin)
+	result, _, _ := inputer.ReadLine()
 	bookName := strings.TrimSpace(string(result))
 	fmt.Println()
-	fmt.Println(actionChoice)
-	
-	inputer = bufio.Reader(os.Stdin)
-	result, _, err := inputer.ReadLine()
-	action := strings.TrimSpace(string(result))
-	
+	fmt.Println(constValue.ActionChoice)
+
+	inputer = bufio.NewReader(os.Stdin)
+	result, _, _ = inputer.ReadLine()
+	action, _ := strconv.Atoi(strings.TrimSpace(string(result)))
+
 	switch action {
-		case 1:
-			Delete(bookName)
-		case 2:
-			fmt.Fprintln("请输入新的信息,格式为作者，书籍总量，出版时间。必须以逗号分隔！")
-			inputer := bufio.Reader(os.Stdin)
-			result, _, err := inputer.ReadLine()
-			allInfo := strings.Split(strings.TrimSpace(string(result)),",")
-			author := allInfo[0]
-			total := allInfo[1]
-			publishTime := allInfo[2]
-			
-			for k, item := range bookInfo {
-				if bookName == item.Name {
-					item.Author = author,
-					item.Total = total,
-					item.CreateTime = publishTime,
-					SavebookJsonData(bookInfo)
-				}
+	case 1:
+		Delete(username, bookName)
+	case 2:
+		fmt.Println("请输入新的信息,格式为作者，书籍总量，出版时间。必须以逗号分隔！")
+		inputer := bufio.NewReader(os.Stdin)
+		result, _, _ := inputer.ReadLine()
+		allInfo := strings.Split(strings.TrimSpace(string(result)), ",")
+		author := allInfo[0]
+		total, _ := strconv.Atoi(allInfo[1])
+		publishTime := allInfo[2]
+
+		for k, item := range bookInfo {
+			if bookName == item.Name {
+				item.Author = author
+				item.Total = total
+				item.CreateTime = publishTime
+				bookInfo[k] = item
+				constValue.Logger(username, "modifing book's info", bookInfo[k])
+				SavebookJsonData(bookInfo)
 			}
-			
+		}
+
 	}
 
 }

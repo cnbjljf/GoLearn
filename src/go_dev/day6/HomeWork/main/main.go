@@ -19,7 +19,7 @@ const (
 var bookJson map[int]model.Book
 var stuJson map[int]model.Student
 
-func AddBook() {
+func AddBook(username string) {
 
 	// 增加书籍的，录入书籍的信息的格式必须是  书名,作者,出版时间,多少本   必须以逗号分隔。
 	// 先读取文件里买的数据，然后在写入，避免覆盖之前的数据
@@ -73,6 +73,7 @@ func AddBook() {
 			Author:     author,
 			CreateTime: published,
 		}
+		constValue.Logger(username, "add a book", bookInfo)
 		bookJson[i] = bookInfo
 		i++
 	}
@@ -83,7 +84,7 @@ func AddBook() {
 	}
 }
 
-func AddStu() {
+func AddStu(username string) {
 	// 添加学生信息的，录入学生的信息必须是i
 	stuJson = make(map[int]model.Student)
 
@@ -135,8 +136,10 @@ func AddStu() {
 			Age:  age,
 		}
 		stuJson[i] = stu
+		constValue.Logger(username, "add a student", stu)
 		i++
 	}
+
 	model.SaveStuData(stuJson)
 }
 
@@ -168,6 +171,7 @@ func BorrowBook(userName string, stuData map[int]model.Student) {
 							stuV.BrrowBook = append(stuV.BrrowBook, v)
 							stuData[ii] = stuV
 							fmt.Println(stuData)
+
 							model.SaveStuData(stuData)
 						}
 					}
@@ -293,15 +297,15 @@ func showDetail(name string) {
 	}
 }
 
-func manage() {
+func manage(username string) {
 	// 管理图书/学生信息的，主要是删除或者修改
 	fmt.Println(constValue.ManageChoice)
-	inputer := bufio.Reader(os.Stdin)
-	result, _, err := inputer.ReadLine()
-	inputNum := strconv.Atoi(strings.TrimSpace(string(result)))
+	inputer := bufio.NewReader(os.Stdin)
+	result, _, _ := inputer.ReadLine()
+	inputNum, _ := strconv.Atoi(strings.TrimSpace(string(result)))
 	switch inputNum {
-	case 1:
-
+	case 2:
+		model.ManageBook(username)
 	}
 }
 
@@ -332,13 +336,13 @@ func main() {
 			switch i {
 			case 1:
 				constValue.Logger(name, "add a book", "begin to add a book")
-				AddBook()
+				AddBook(name)
 			case 2:
 				constValue.Logger(name, "add a student", "begin to add a Student")
-				AddStu()
+				AddStu(name)
 			case 3:
 				constValue.Logger(name, "manage ", "going to manage platform")
-				manage()
+				manage(name)
 			case 4:
 				constValue.Logger(name, "show", "show the student's info")
 				showDetail("student")
