@@ -43,7 +43,7 @@ func AddBook(username string) {
 	for i < StockNum {
 		fmt.Println("Please Input your book's infoenter quit will quit this func, and the format is ")
 		fmt.Println(" name, author ,published , how many")
-		fmt.Println("举个例子：    aaa,Leo,20170705,12 , 必须以逗号分隔")
+		fmt.Println("举个例子：    aaa,Leo,20170705,12 , 必须以逗号分隔，输入quit退出")
 
 		reader := bufio.NewReader(os.Stdin)
 		result, _, err := reader.ReadLine()
@@ -105,7 +105,7 @@ func AddStu(username string) {
 	for {
 		fmt.Println("Please Input your student's infomation,enter quit will quit this func, and the format is ")
 		fmt.Println(" name, ID ,sex , age")
-		fmt.Println("举个例子：    Leo,0001,man,12 , 必须以逗号分隔")
+		fmt.Println("举个例子：    Leo,0001,man,12 , 必须以逗号分隔，输入quit退出")
 
 		reader := bufio.NewReader(os.Stdin)
 		result, _, err := reader.ReadLine()
@@ -145,11 +145,15 @@ func AddStu(username string) {
 
 func BorrowBook(userName string, stuData map[int]model.Student) {
 	// 借书的功能
+	/*
+		userName 谁登陆的
+
+	*/
 	var choice string
 	for {
 		showDetail("book")
 
-		fmt.Println("请输入书名,每次只能借一本")
+		fmt.Println("请输入书名,每次只能借一本，输入quit退出")
 		reader := bufio.NewReader(os.Stdin)
 		result, _, err := reader.ReadLine()
 		choice = strings.TrimSpace(string(result))
@@ -181,6 +185,7 @@ func BorrowBook(userName string, stuData map[int]model.Student) {
 					data[i] = tmp
 					//					fmt.Println(data[i])
 					model.SavebookJsonData(data)
+					constValue.Logger(userName, "borrow a book", "the book name is "+choice)
 					fmt.Println("借书成功，书名:[", choice, "]该本书存量:[", data[i].Total, "]")
 				} else {
 					fmt.Println("该本书没有剩余了，请等待他人归还再借！")
@@ -214,7 +219,7 @@ func ReturnBook(name string, stuData map[int]model.Student) {
 				}
 			}
 		}
-		fmt.Printf("\n请输入书名,每次只能还一本\n")
+		fmt.Printf("\n请输入书名,每次只能还一本输入quit退出\n")
 		reader := bufio.NewReader(os.Stdin)
 		result, _, _ := reader.ReadLine()
 		bookName := strings.TrimSpace(string(result))
@@ -248,6 +253,7 @@ func ReturnBook(name string, stuData map[int]model.Student) {
 							bookData[k] = v
 						}
 					}
+					constValue.Logger(name, "return a book", "book name is "+bookName)
 					model.SavebookJsonData(bookData)
 					fmt.Println("还书成功！！！")
 				}
@@ -304,6 +310,8 @@ func manage(username string) {
 	result, _, _ := inputer.ReadLine()
 	inputNum, _ := strconv.Atoi(strings.TrimSpace(string(result)))
 	switch inputNum {
+	case 1:
+		model.ManageStudent(username)
 	case 2:
 		model.ManageBook(username)
 	}

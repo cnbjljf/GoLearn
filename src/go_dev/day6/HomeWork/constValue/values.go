@@ -41,14 +41,13 @@ func Exist(filename string) bool { // 判断指定文件是否存在的
 }
 
 func Logger(username, action string, content interface{}) {
-	ct, _ := content.(string)
 	f, err := os.OpenFile(LogFile, os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
 		fmt.Println("opening file happend a error!,", err)
 		return
 	}
-	logContent := fmt.Sprintf("%s user:[%s] action:[%s] info:[%s]\n", time.Now().Format("2006-01-02 15:04:05"),
-		username, action, ct)
+	logContent := fmt.Sprintf("%s user:[%s] action:[%s] info:[%v]\n", time.Now().Format("2006-01-02 15:04:05"),
+		username, action, content)
 	f.WriteString(logContent)
 	defer f.Close()
 }

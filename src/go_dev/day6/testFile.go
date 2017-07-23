@@ -28,6 +28,7 @@ type stu struct {
 
 type book struct {
 	Name string
+	Id   int
 }
 
 //func main() {
@@ -56,19 +57,15 @@ type book struct {
 //}
 
 func Logger(username, action string, content interface{}) {
-	ct, ok := content.(string)
-	if ok == false {
-		fmt.Println(ok)
-		return
-	}
+	fmt.Println("ss", content)
 	const LogFile = "d:/info.log"
 	f, err := os.OpenFile(LogFile, os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
 		fmt.Println("opening file happend a error!,", err)
 		return
 	}
-	logContent := fmt.Sprintf("%s user:[%s] action:[%s] info[%s]\n",
-		time.Now().Format("2006-01-02 15:04:05"), username, action, ct)
+	logContent := fmt.Sprintf("%s user:[%s] action:[%s] info[%v]\n",
+		time.Now().Format("2006-01-02 15:04:05"), username, action, content)
 	f.WriteString(logContent)
 	fmt.Println(logContent)
 	defer f.Close()
@@ -78,6 +75,8 @@ func main() {
 
 	var ss = book{
 		Name: "first",
+		Id:   100,
 	}
 	Logger("admin", "delete", ss)
+	Logger("admin", "delete", "asdfasdfasdf")
 }
