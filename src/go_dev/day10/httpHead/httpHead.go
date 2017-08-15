@@ -30,6 +30,5 @@ func main() {
 			continue
 		}
 		fmt.Printf("head succ,status:%v\n", resp.Status)
-
 	}
 }
