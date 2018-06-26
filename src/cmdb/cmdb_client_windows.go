@@ -2,13 +2,17 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"math"
+	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
@@ -19,16 +23,30 @@ import (
 	"github.com/shirou/gopsutil/host"
 	"github.com/shirou/gopsutil/mem"
 	"github.com/shirou/gopsutil/net"
+	"github.com/toolkits/file"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/transform"
 )
 
 const (
-	asset_type = "server"
+	asset_type              = "server"
+	server                  = "192.168.5.100"
+	port                    = 80
+	request_timeout         = 30                               //发起http请求的超时时间
+	asset_report_with_no_id = "/cmdb/report_with_no_asset_id/" // 第一次汇报的uRL
+	asset_report            = "/cmdb/report/"                  // 第二次汇报的地址
+	asset_id                = `c:\cmdb\asset_id`               // 资产ID
+	user                    = "jiafa.liao@quanshi.com"         // 汇报的用户
+	token                   = "todayisgoodtoday"               // 汇报的token
 )
 
 var (
-	collectInfo map[string]interface{}
+	collectInfo                             map[string]interface{}
+	reportAssetWithoutId, reportAssetWithId string
+	isCollect                               string
+	reportData                              string
+	responseInfo                            map[string]interface{}
+	tt                                      string
 )
 
 func collectCpu() bool {
@@ -42,7 +60,7 @@ func collectCpu() bool {
 		a := exec.Command("wmic")
 		inpipe, err := a.StdinPipe()
 		if err != nil {
-			fmt.Println("executing command wmic happend a error:", err)
+			log.Fatalf("executing command wmic happend a error:", err)
 			return false
 		}
 
@@ -62,18 +80,15 @@ func collectCpu() bool {
 		for i, line := range strRt {
 			collectInfo["cpu_model"] = strings.Fields(line)[4]
 			collectInfo["cpu_count"] = i
-
 		}
 		return true
 	}
-
 	if len(infoStat) <= 1 {
 		for _, m := range infoStat {
 			collectInfo["cpu_model"] = m.ModelName
 			collectInfo["cpu_count"] = int(m.CPU) + 1
 			collectInfo["cpu_core_count"] = m.Cores
 		}
-
 	} else {
 		for _, m := range infoStat {
 			collectInfo["cpu_model"] = m.ModelName
@@ -81,11 +96,11 @@ func collectCpu() bool {
 			if ok {
 				core_v, okcore := collectInfo["cpu_core_count"]
 				if okcore {
-					collectInfo["cpu_core_count"] = m.Cores + core_v.(int32) // 把cpu核心相加
+					collectInfo["cpu_core_count"] = int(m.Cores) + int(core_v.(int32)) // 把cpu核心相加
 				} else {
 					collectInfo["cpu_core_count"] = m.Cores
 				}
-				collectInfo["cpu_count"] = m.CPU + v.(int32)
+				collectInfo["cpu_count"] = int(m.CPU) + int(v.(int32))
 			} else {
 				collectInfo["cpu_core_count"] = m.Cores
 				collectInfo["cpu_count"] = int(m.CPU) + 1
@@ -210,6 +225,24 @@ func collectHost() {
 	collectInfo["os_release"] = h.Platform
 	collectInfo["kernel_release"] = h.PlatformVersion
 	collectInfo["uuid"] = h.HostID
+	sncmd := "bios get serialnumber\n"
+	a := exec.Command("wmic")
+	inpipe, err := a.StdinPipe()
+	if err != nil {
+		log.Println("executing command wmic happend a error:", err)
+	}
+
+	go func() {
+		defer inpipe.Close()
+		io.WriteString(inpipe, sncmd)
+	}()
+
+	out, err := a.CombinedOutput()
+	c := strings.Split(string(out), "SerialNumber")
+	c1 := c[1]
+	d := strings.Split(c1, "\n")
+	collectInfo["sn"] = strings.TrimSpace(d[1])
+
 }
 
 func addStr(num int, substring string) (str string) {
@@ -272,11 +305,11 @@ func collectOther() {
 	result := strings.Split(sb, "\n")
 	for _, line := range result {
 		switch {
-		case strings.HasPrefix(line, "系统制造商:"):
+		case strings.HasPrefix(line, "系统制造商:") || strings.HasPrefix(line, "System Model:"):
 			fa := strings.Split(line, ":")[1]
 			fatory := strings.TrimSpace(fa)
 			collectInfo["manufactory"] = fatory
-		case strings.HasPrefix(line, "系统型号:"):
+		case strings.HasPrefix(line, "系统型号:") || strings.HasPrefix(line, "System Manufacturer:"):
 			mod := strings.Split(line, ":")[1]
 			model := strings.TrimSpace(mod)
 			collectInfo["model"] = model
@@ -284,7 +317,7 @@ func collectOther() {
 		case !flag && strings.HasPrefix(line, "处理器:"):
 			c := strings.Split(line, ":")[1]
 			collectInfo["cpu_count"] = strings.Fields(c)[1]
-			collectInfo["cpu_core_count"] = "unknow(go)"
+			collectInfo["cpu_core_count"] = 1
 			collectInfo["cpu_model"] = "unknow(go)"
 
 		}
@@ -292,13 +325,25 @@ func collectOther() {
 }
 
 func CollectAllData() string {
+	assetId, _ := getAssetId()
 	collectInfo = make(map[string]interface{})
 	collectInfo["wake_up_type"] = "Power Switch"
+	collectInfo["asset_type"] = asset_type
+	collectInfo["asset_type"] = asset_type
+	if len(assetId) > 0 {
+		collectInfo["asset_id"] = assetId
+	} else {
+		collectInfo["asset_id"] = nil
+	}
 	collectHost()
 	collectDisk()
 	collectRam()
 	collectNic()
 	collectOther()
+	//	var postData map[string]map[string]interface{}
+	//	postData = make(map[string]map[string]interface{})
+	//	postData["asset_data"] = make(map[string]interface{})
+	//	postData["asset_data"] = collectInfo
 	jsondata, err := json.Marshal(collectInfo)
 	if err != nil {
 		log.Fatalln("encoding json format data happend a error:", err)
@@ -307,6 +352,117 @@ func CollectAllData() string {
 	return string(jsondata)
 }
 
+func connectCmdbServer(url, method string, jsondata string) (result []byte) {
+	// 链接到cmdb服务器的，然后把采集到的信息提交上去的
+	if method == "post" {
+		//		res, err := http.Post(url, )
+		//		postData := bytes.NewReader(jsondata)
+		fmt.Printf("begin to post data to this url[%s]", url)
+		resp, err := http.Post(url,
+			"application/x-www-form-urlencoded",
+			strings.NewReader(fmt.Sprintf("asset_data=%s", jsondata)))
+		if err != nil {
+			fmt.Println("connect cmdb server was error:", err)
+			return
+		}
+		defer resp.Body.Close()
+		result, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Println("ioutil read happend a error:", err)
+		}
+		return result
+	}
+	return
+}
+
+func ReportData() {
+	/* 汇报资产数据 */
+	jsondata := CollectAllData()
+	responseInfo = make(map[string]interface{})
+	fmt.Println(jsondata)
+	if len(collectInfo) > 0 {
+		assetId, _ := getAssetId()
+		fmt.Println(len(assetId), assetId)
+		if len(assetId) > 0 {
+			method := "post"
+			result := connectCmdbServer(reportAssetWithId, method, jsondata)
+			//json.Unmarshal(result, &responseInfo)
+			fmt.Println(string(result))
+		} else {
+			method := "post"
+			result := connectCmdbServer(reportAssetWithoutId, method, jsondata)
+			json.Unmarshal(result, &responseInfo)
+			v, ok := responseInfo["asset_id"]
+			if ok {
+				if saveAssetId(v) {
+					log.Println("already saved asset id :", responseInfo["asset_id"])
+				}
+			} else {
+				fmt.Println(string(result))
+			}
+		}
+	} else {
+		log.Fatalln("No Data after collecting, so won't report ")
+	}
+}
+
+func saveAssetId(assetId interface{}) bool {
+	/* 保存资产ID */
+	fmt.Println("assetId", assetId)
+	fileObj, err := os.OpenFile(asset_id, os.O_WRONLY|os.O_CREATE, 666)
+	if err != nil {
+		fmt.Println("open file happend a error:", err)
+		return false
+	}
+	defer fileObj.Close()
+	writer := bufio.NewWriter(fileObj)
+	d, ok := assetId.(float64)
+	if ok == false {
+		log.Println("can't  convert the asset id from interface to float64")
+		return false
+	}
+	writer.WriteString(strconv.Itoa(int(d)))
+	writer.Flush()
+	return true
+}
+
+func getAssetId() (string, error) {
+	// 从文件里获取资产ID的
+	if !file.IsExist(asset_id) {
+		errMsg := fmt.Sprintf("not found the asset_id(%s)", asset_id)
+		log.Printf(errMsg)
+		return "", errors.New(errMsg)
+	}
+	assetIdFileObj, err := os.Open(asset_id)
+	if err != nil {
+		errMsg := fmt.Sprintf("open asset id(%s) happend a error:%s", asset_id, err)
+		log.Printf(errMsg)
+		return "", errors.New(errMsg)
+	}
+	defer assetIdFileObj.Close()
+	assetIdFileReader := bufio.NewReader(assetIdFileObj)
+	for {
+		assetId, readErr := assetIdFileReader.ReadString('\n')
+		if readErr == io.EOF {
+			return assetId, nil
+		}
+		return assetId, nil
+	}
+	return "", errors.New("not asset id return")
+}
+
 func main() {
-	fmt.Println(CollectAllData())
+	reportAssetWithoutId = fmt.Sprintf("http://%s:%d%s", server, port, asset_report_with_no_id)
+	reportAssetWithId = fmt.Sprintf("http://%s:%d%s", server, port, asset_report)
+	flag.StringVar(&isCollect, "c", "", "collect the machine's data")
+	flag.StringVar(&reportData, "r", "", "report the machine's data(include collect data)")
+	switch {
+	case len(isCollect) != 0:
+		CollectAllData()
+	case len(reportData) != 0:
+		ReportData()
+	default:
+		ReportData()
+	}
+	fmt.Scanln(&tt)
 }
